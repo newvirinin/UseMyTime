@@ -1,106 +1,120 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
 {% block title %}Редактирование профиля{% endblock %}
-<style>
-    th {
-        margin-right: 10px;
-    }
-</style>
 {% block content %}
-    <h1>Редактировать профиль</h1>
-    <p>Вы можете использовать следующую форму для редактирования профиля:</p>
-    <form method="post" enctype="multipart/form-data">
-        <table style="border-collapse: separate; border-spacing: 10px;">
-            <!-- Изменен порядок полей и добавлены новые -->
-            <!-- Фамилия -->
-            <tr>
-                <th>{{ user_form.last_name.label_tag }}</th>
-                <td>
-                    {{ user_form.last_name }}
-                    {% if user_form.last_name.errors %}
-                    <div style="color: red;">{{ user_form.last_name.errors }}</div>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h1 class="card-title text-center mb-4">Редактировать профиль</h1>
+                    {% if user_form.errors or profile_form.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Ошибка!</strong> Пожалуйста, исправьте ошибки в форме.
+                        </div>
                     {% endif %}
-                </td>
-            </tr>
+                    <p class="text-center text-muted mb-4">
+                        Вы можете использовать следующую форму для редактирования профиля.
+                    </p>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
 
-            <!-- Имя -->
-            <tr>
-                <th>{{ user_form.first_name.label_tag }}</th>
-                <td>
-                    {{ user_form.first_name }}
-                    {% if user_form.first_name.errors %}
-                    <div style="color: red;">{{ user_form.first_name.errors }}</div>
-                    {% endif %}
-                </td>
-            </tr>
+                        <!-- Personal Information -->
+                        <h5 class="mb-3">Личная информация</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ user_form.last_name|add_class:"form-control" }}
+                                    <label for="{{ user_form.last_name.id_for_label }}">Фамилия</label>
+                                    {% if user_form.last_name.errors %}
+                                        <div class="text-danger small">{{ user_form.last_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ user_form.first_name|add_class:"form-control" }}
+                                    <label for="{{ user_form.first_name.id_for_label }}">Имя</label>
+                                    {% if user_form.first_name.errors %}
+                                        <div class="text-danger small">{{ user_form.first_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ profile_form.surname|add_class:"form-control" }}
+                                    <label for="{{ profile_form.surname.id_for_label }}">Отчество</label>
+                                    {% if profile_form.surname.errors %}
+                                        <div class="text-danger small">{{ profile_form.surname.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
 
-            <!-- Отчество (из ProfileForm) -->
-            <tr>
-                <th>{{ profile_form.surname.label_tag }}</th>
-                <td>
-                    {{ profile_form.surname }}
-                    {% if profile_form.surname.errors %}
-                    <div style="color: red;">{{ profile_form.surname.errors }}</div>
-                    {% endif %}
-                </td>
-            </tr>
+                        <!-- Account Information -->
+                        <h5 class="mb-3">Информация аккаунта</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ user_form.username|add_class:"form-control" }}
+                                    <label for="{{ user_form.username.id_for_label }}">Имя пользователя</label>
+                                    {% if user_form.username.errors %}
+                                        <div class="text-danger small">{{ user_form.username.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ user_form.email|add_class:"form-control" }}
+                                    <label for="{{ user_form.email.id_for_label }}">Email</label>
+                                    {% if user_form.email.errors %}
+                                        <div class="text-danger small">{{ user_form.email.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
 
-            <!-- Фото -->
-            <tr>
-                <th>{{ profile_form.photo.label_tag }}</th>
-                <td>
-                    {{ profile_form.photo }}
-                    {% if profile_form.photo.errors %}
-                    <div style="color: red;">{{ profile_form.photo.errors }}</div>
-                    {% endif %}
-                </td>
-            </tr>
+                        <!-- Professional Information -->
+                        <h5 class="mb-3">Профессиональная информация</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ profile_form.position|add_class:"form-select" }}
+                                    <label for="{{ profile_form.position.id_for_label }}">Должность</label>
+                                    {% if profile_form.position.errors %}
+                                        <div class="text-danger small">{{ profile_form.position.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ profile_form.phone_internal|add_class:"form-control" }}
+                                    <label for="{{ profile_form.phone_internal.id_for_label }}">Внутренний номер</label>
+                                    {% if profile_form.phone_internal.errors %}
+                                        <div class="text-danger small">{{ profile_form.phone_internal.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
 
-            <!-- Должность -->
-            <tr>
-                <th>{{ profile_form.position.label_tag }}</th>
-                <td>
-                    {{ profile_form.position }}
-                    {% if profile_form.position.errors %}
-                    <div style="color: red;">{{ profile_form.position.errors }}</div>
-                    {% endif %}
-                </td>
-            </tr>
+                        <!-- Photo Upload -->
+                        <div class="mb-3">
+                            <label for="{{ profile_form.photo.id_for_label }}" class="form-label">Фото профиля</label>
+                            {{ profile_form.photo|add_class:"form-control" }}
+                            {% if profile_form.photo.errors %}
+                                <div class="text-danger small">{{ profile_form.photo.errors.0 }}</div>
+                            {% endif %}
+                        </div>
 
-            <!-- Внутренний номер -->
-            <tr>
-                <th>{{ profile_form.phone_internal.label_tag }}</th>
-                <td>
-                    {{ profile_form.phone_internal }}
-                    {% if profile_form.phone_internal.errors %}
-                    <div style="color: red;">{{ profile_form.phone_internal.errors }}</div>
-                    {% endif %}
-                </td>
-            </tr>
-
-            <!-- Имя пользователя -->
-            <tr>
-                <th>{{ user_form.username.label_tag }}</th>
-                <td>
-                    {{ user_form.username }}
-                    {% if user_form.username.errors %}
-                    <div style="color: red;">{{ user_form.username.errors }}</div>
-                    {% endif %}
-                </td>
-            </tr>
-
-            <!-- Email -->
-            <tr>
-                <th>{{ user_form.email.label_tag }}</th>
-                <td>
-                    {{ user_form.email }}
-                    {% if user_form.email.errors %}
-                    <div style="color: red;">{{ user_form.email.errors }}</div>
-                    {% endif %}
-                </td>
-            </tr>
-        </table>
-        {% csrf_token %}
-        <p><input type="submit" value="Сохранить изменения" class="btn text-white" 
-            style="background-color: rgb(6, 46, 101); border-radius:0px;"></p>
-    </form>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary py-2">Сохранить изменения</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

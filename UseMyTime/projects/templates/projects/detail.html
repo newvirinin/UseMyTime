@@ -67,8 +67,7 @@
                   <form action="{% url 'projects_activate' %}" method="post" class="d-inline me-2">
                       {% csrf_token %}
                       <input type="hidden" name="project_id" value="{{ object.pk }}">
-                      <button type="submit" class="btn text-white" 
-                              style="background-color: rgb(6, 46, 101); border-radius:0px;">
+                      <button type="submit" class="btn btn-primary">
                           Активировать проект
                       </button>
                   </form>
@@ -76,8 +75,7 @@
                   
                   <form action="{% url 'projects_archivate' object.id %}" method="post" class="d-inline me-2">
                       {% csrf_token %}
-                      <button type="submit" class="btn text_white" 
-                              style="background-color: rgb(6, 46, 101); border-radius:0px;">
+                      <button type="submit" class="btn btn-secondary">
                           В архив
                       </button>
                   </form>
@@ -88,13 +86,11 @@
         <div>
             {% if user.id == object.user.id %}
               <a href="{% url 'project_update' object.pk %}" 
-              class="btn text-white me-2"
-              style="background-color: rgb(6, 46, 101); border-radius:0px;">
+              class="btn btn-secondary me-2">
                   Редактировать
               </a>
               <a href="{% url 'project_delete' object.pk %}" 
-              class="btn btn-danger"
-              style="border-radius:0px;">
+              class="btn btn-danger">
                   Удалить
               </a>
             {% endif %}
@@ -139,26 +135,32 @@
         </div>
         <div>
           {% if can_submit_review and user.id == object.user.id %}
-          <form method="post" action="{% url 'project_submit_review' object.pk %}" class="d-inline" enctype="multipart/form-data">
+          <form method="post" action="{% url 'project_submit_review' object.pk %}" enctype="multipart/form-data">
             {% csrf_token %}
-            <input type="text" name="submit_comment" class="form-control d-inline-block me-2" style="width:260px" placeholder="Комментарий (опционально)"/>
-            <input type="file" name="files" class="form-control d-inline-block me-2" style="width:260px" multiple />
-            <button class="btn btn-warning">Отправить на проверку</button>
+            <div class="mb-2">
+              <input type="text" name="submit_comment" class="form-control" placeholder="Комментарий (опционально)"/>
+            </div>
+            <div class="mb-2">
+              <input type="file" name="files" class="form-control" multiple />
+            </div>
+            <button class="btn btn-warning w-100">Отправить на проверку</button>
           </form>
           {% endif %}
 
           {% with role=user.profile.role|default:'' %}
           {% if role == 'manager' or role == 'sector_manager' %}
             {% if object.review_status == 'in_review' %}
-            <form method="post" action="{% url 'project_review_approve' object.pk %}" class="d-inline ms-2">
-              {% csrf_token %}
-              <button class="btn btn-success">Принять</button>
-            </form>
-            <form method="post" action="{% url 'project_review_reject' object.pk %}" class="d-inline ms-2">
-              {% csrf_token %}
-              <input type="text" name="review_comment" class="form-control d-inline-block me-2" style="width:260px" placeholder="Комментарий"/>
-              <button class="btn btn-danger">Вернуть</button>
-            </form>
+            <div class="ms-2">
+              <form method="post" action="{% url 'project_review_approve' object.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-success">Принять</button>
+              </form>
+              <form method="post" action="{% url 'project_review_reject' object.pk %}" class="d-inline ms-2">
+                {% csrf_token %}
+                <input type="text" name="review_comment" class="form-control d-inline-block me-2" placeholder="Комментарий"/>
+                <button class="btn btn-danger">Вернуть</button>
+              </form>
+            </div>
             {% endif %}
           {% endif %}
           {% endwith %}

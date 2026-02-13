@@ -40,7 +40,7 @@ UseMyTime — это веб-приложение для управления в�
 
 1. Клонирование репозитория:
 ```bash
-git clone https://gitlab.com/your-username/usemytime.git
+git clone https://github.com/newvirinin/UseMyTime.git
 cd usemytime
 ```
 

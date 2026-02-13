@@ -1,25 +1,30 @@
 {% extends "base.html" %}
 {% block title %}Контакты{% endblock %}
-{% block style %}
-<style>
-    input, textarea, button{
-        margin: 2px;
-        width: 300px;
-        border: solid 1px black;
-    }
-</style>
-{% endblock %}
 {% block content %}
-    <h1>Контакты</h1>
-    <p>Задать вопрос разработчикам:</p>
-    <form method="post" action="{% url 'ask' %}">
-        {% csrf_token %}
-        <div><strong>Имя:</strong> {{ default_name }}</div>
-        <div><strong>Email:</strong> {{ default_email }}</div>
-        <br>
-        <textarea name="body" placeholder="Сообщение" 
-            style="height: 150px; resize: None;"></textarea><br>
-        <input type="submit" value="Отправить" class="btn text-white" 
-            style="background-color: rgb(6, 46, 101); border-radius:0px;"></p>
-    </form>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h1 class="card-title text-center mb-4">Контакты</h1>
+                    <p class="text-center text-muted mb-4">Задать вопрос разработчикам</p>
+                    <form method="post" action="{% url 'ask' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <strong>Имя:</strong> {{ default_name }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Email:</strong> {{ default_email }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_body" class="form-label">Сообщение</label>
+                            <textarea name="body" id="id_body" class="form-control" placeholder="Введите ваше сообщение" rows="5"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2">Отправить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

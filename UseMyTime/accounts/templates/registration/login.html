@@ -1,39 +1,42 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
 {% block title %}Вход{% endblock %}
 {% block content %}
-    <h1>Вход</h1>
-    {% if form.errors %}
-        <p>
-            Неверный логин или пароль.
-            Пожалуйста, попробуйте снова.
-        </p>
-    {% endif %}
-    <p>
-        Пожалуйста, заполните форму для входа в аккаунт.
-        Если у вас нет аккаунта, вы можете
-        <a href="{% url "register" %}">зарегистрироваться</a>.
-    </p>
-    <form action="{% url 'login' %}" method="post" class="mb-3">
-        {% csrf_token %}
-        
-        <div class="mb-3">
-            {{ form.username.label_tag }}<br>
-            {{ form.username}}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h1 class="card-title text-center mb-4">Вход</h1>
+                    {% if form.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Ошибка!</strong> Неверный логин или пароль. Пожалуйста, попробуйте снова.
+                        </div>
+                    {% endif %}
+                    <p class="text-center text-muted mb-4">
+                        Пожалуйста, заполните форму для входа в аккаунт.
+                        Если у вас нет аккаунта, вы можете
+                        <a href="{% url "register" %}" class="text-decoration-none">зарегистрироваться</a>.
+                    </p>
+                    <form action="{% url 'login' %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-floating mb-3">
+                            {{ form.username|add_class:"form-control" }}
+                            <label for="{{ form.username.id_for_label }}">Имя пользователя</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            {{ form.password|add_class:"form-control" }}
+                            <label for="{{ form.password.id_for_label }}">Пароль</label>
+                        </div>
+                        <input type="hidden" name="next" value="{{ next }}" />
+                        <button type="submit" class="btn btn-primary w-100 py-2">Войти</button>
+                    </form>
+                    <p class="text-center mt-3">
+                        <a href="{% url "password_reset" %}" class="text-decoration-none">Забыли пароль?</a>
+                    </p>
+                </div>
+            </div>
         </div>
-        
-        <div class="mb-3">
-            {{ form.password.label_tag }}<br>
-            {{ form.password}}
-        </div>
-        
-        <input type="hidden" name="next" value="{{ next }}" />
-        
-        <p><input type="submit" value="Войти" class="btn text-white" 
-            style="background-color: rgb(6, 46, 101); border-radius:0px;"></p>
-    </form>
-    <p>
-        <a href="{% url "password_reset" %}">
-            Забыли пароль?
-        </a>
-    </p>
+    </div>
+</div>
 {% endblock %}

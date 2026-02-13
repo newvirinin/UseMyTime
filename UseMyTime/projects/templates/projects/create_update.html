@@ -1,110 +1,109 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
 {% block title %}
     {% if object %}Редактирование проекта{% else %}Создание проекта{% endif %}
 {% endblock %}
 {% block content %}
-    <h1>
-        {% if object %}
-            Редактирование проекта "{{ object.title }}"
-        {% else %}
-            Создание нового проекта
-        {% endif %}
-    </h1>
-    
-    {% if form.errors %}
-        <p class="text-danger">
-            Пожалуйста, исправьте ошибки ниже.
-        </p>
-    {% endif %}
-    <hr>
-    
-    <form method="post" class="mb-3">
-        {% csrf_token %}
-        
-        <!-- Название проекта -->
-        <div class="mb-3">
-            {{ form.title.label_tag }}<br>
-            {{ form.title }}
-            {% if form.title.errors %}
-                <div class="text-danger">{{ form.title.errors }}</div>
-            {% endif %}
-        </div>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h1 class="card-title text-center mb-4">
+                        {% if object %}
+                            Редактирование проекта "{{ object.title }}"
+                        {% else %}
+                            Создание нового проекта
+                        {% endif %}
+                    </h1>
 
-        <!-- Описание проекта -->
-        <div class="mb-3">
-            {{ form.description.label_tag }}<br>
-            {{ form.description }}
-            {% if form.description.errors %}
-                <div class="text-danger">{{ form.description.errors }}</div>
-            {% endif %}
-        </div>
-        
-        <!-- Добавление задач -->
-        <hr>
-        <div class="mb-3">
-            <h3>Задачи</h3>
-            <div id="tasks-container">
-                {% for task in object.tasks.all|default:'' %}
-                <div class="task-item mb-2">
-                    <input type="text" name="tasks" value="{{ task.text }}" class="d-inline-block w-auto">
-                    <button type="button" class="btn btn-sm btn-danger remove-task ms-2">×</button>
+                    {% if form.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Ошибка!</strong> Пожалуйста, исправьте ошибки ниже.
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <!-- Project Details -->
+                        <h5 class="mb-3">Информация о проекте</h5>
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                {{ form.title|add_class:"form-control" }}
+                                <label for="{{ form.title.id_for_label }}">Название проекта</label>
+                            </div>
+                            {% if form.title.errors %}
+                                <div class="text-danger small">{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Описание проекта</label>
+                            {{ form.description|add_class:"form-control" }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Tasks -->
+                        <h5 class="mb-3">Задачи</h5>
+                        <div class="mb-3">
+                            <div id="tasks-container">
+                                {% for task in object.tasks.all|default:'' %}
+                                <div class="task-item mb-2 d-flex">
+                                    <input type="text" name="tasks" value="{{ task.text }}" class="form-control me-2">
+                                    <button type="button" class="btn btn-sm btn-danger remove-task">×</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" id="add-task" class="btn btn-outline-primary btn-sm mt-2">
+                                Добавить задачу
+                            </button>
+                        </div>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="submit" class="btn btn-primary">
+                                {% if object %}Сохранить изменения{% else %}Создать проект{% endif %}
+                            </button>
+                            <a href="{% if object %}{% url 'project_detail' object.pk %}{% else %}{% url 'project_create' %}{% endif %}" class="btn btn-secondary">
+                                Отмена
+                            </a>
+                            {% if object %}
+                                <a href="{% url 'project_delete' object.pk %}" class="btn btn-danger">
+                                    Удалить
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
                 </div>
-                {% endfor %}
             </div>
-            <button type="button" 
-                    id="add-task" 
-                    class="btn btn-sm text-white mt-2" 
-                    style="background-color: rgb(6, 46, 101); border-radius:0px;">
-                Добавить задачу
-            </button>
         </div>
-        <hr>
+    </div>
+</div>
 
-        <p>
-            <!-- Кнопка создания/изменения -->
-            <input type="submit" 
-                   value="{% if object %}Сохранить изменения{% else %}Создать проект{% endif %}" 
-                   class="btn text-white" 
-                   style="background-color: rgb(6, 46, 101); border-radius:0px;">
-            <!-- Кнопка отмены -->
-            <a href="{% if object %}{% url 'project_detail' object.pk %}{% else %}{% url 'project_create' %}{% endif %}" 
-               class="btn btn-secondary" 
-               style="border-radius:0px;">
-                Отмена
-            </a>
-            <!-- Кнопка удаления -->
-            {% if object %}
-                <a href="{% url 'project_delete' object.pk %}" 
-                   class="btn btn-danger" 
-                   style="border-radius:0px;">
-                    Удалить
-                </a>
-            {% endif %}
-        </p>
-    </form>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.getElementById('tasks-container');
-            const addButton = document.getElementById('add-task');
-            
-            // Добавление новой задачи
-            addButton.addEventListener('click', function() {
-                const taskDiv = document.createElement('div');
-                taskDiv.className = 'task-item mb-2';
-                taskDiv.innerHTML = `
-                    <input type="text" name="tasks" class="d-inline-block w-auto" placeholder="Текст задачи">
-                    <button type="button" class="btn btn-sm btn-danger remove-task ms-2">×</button>
-                `;
-                container.appendChild(taskDiv);
-            });
-            
-            // Удаление задачи
-            container.addEventListener('click', function(e) {
-                if (e.target.classList.contains('remove-task')) {
-                    e.target.parentElement.remove();
-                }
-            });
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('tasks-container');
+        const addButton = document.getElementById('add-task');
+
+        // Добавление новой задачи
+        addButton.addEventListener('click', function() {
+            const taskDiv = document.createElement('div');
+            taskDiv.className = 'task-item mb-2 d-flex';
+            taskDiv.innerHTML = `
+                <input type="text" name="tasks" class="form-control me-2" placeholder="Текст задачи">
+                <button type="button" class="btn btn-sm btn-danger remove-task">×</button>
+            `;
+            container.appendChild(taskDiv);
         });
-    </script>
+
+        // Удаление задачи
+        container.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-task')) {
+                e.target.parentElement.remove();
+            }
+        });
+    });
+</script>
 {% endblock %}
