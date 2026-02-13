@@ -1,0 +1,93 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  PYTHON_VERSION: "3.9"
+  DJANGO_SETTINGS_MODULE: "UseMyTime.settings_test"
+
+before_script:
+  - python -m venv venv
+  - source venv/bin/activate
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+
+test:
+  stage: test
+  script:
+    - python UseMyTime/manage.py test
+    - python UseMyTime/manage.py check --deploy
+  coverage: '/TOTAL.+?(\d+\%)$/'
+  artifacts:
+    reports:
+      junit: test_results.xml
+    paths:
+      - test_results.txt
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - develop
+
+code_quality:
+  stage: test
+  script:
+    - pip install flake8
+    - flake8 UseMyTime/ --max-line-length=88 --exclude=migrations,staticfiles
+  allow_failure: true
+  only:
+    - merge_requests
+    - main
+
+security:
+  stage: test
+  script:
+    - pip install bandit
+    - bandit -r UseMyTime/ -f json -o bandit-report.json
+  artifacts:
+    reports:
+      sast: bandit-report.json
+  allow_failure: true
+  only:
+    - merge_requests
+    - main
+
+build:
+  stage: build
+  script:
+    - python UseMyTime/manage.py collectstatic --noinput
+    - python UseMyTime/manage.py makemigrations --check
+  artifacts:
+    paths:
+      - staticfiles/
+    expire_in: 1 hour
+  only:
+    - main
+    - develop
+
+deploy_staging:
+  stage: deploy
+  script:
+    - echo "Deploy to staging environment"
+    # Add deployment commands here
+  environment:
+    name: staging
+    url: https://staging.usemytime.example.com
+  only:
+    - develop
+  when: manual
+
+deploy_production:
+  stage: deploy
+  script:
+    - echo "Deploy to production environment"
+    # Add production deployment commands here
+  environment:
+    name: production
+    url: https://usemytime.example.com
+  only:
+    - main
+  when: manual
+  dependencies:
+    - build
