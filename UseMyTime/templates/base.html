@@ -19,8 +19,8 @@
                 {% if user.is_authenticated %}
                 <div class="d-flex align-items-start">
                     <div class="rounded-circle overflow-hidden me-4 mb-3 bg-white" style="width: 70px; height: 70px;">
-                        {% if user.profile.photo %}
-                            <img src="{{ user.profile.photo.url }}" alt="Profile Photo" class="w-100 h-100 object-fit-cover">
+                        {% if user_profile and user_profile.photo %}
+                            <img src="{{ user_profile.photo.url }}" alt="Profile Photo" class="w-100 h-100 object-fit-cover">
                         {% else %}
                             <div class="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person text-white" viewBox="0 0 16 16">
@@ -28,11 +28,12 @@
                                 </svg>
                             </div>
                         {% endif %}
+
                     </div>
                     <div class="me-5 pt-2">
                         <div class="fw-bold">
                             {% if not user.first_name %}{{ user.username }}
-                            {% else %}{{ user.last_name }} {{ user.first_name }} {% if user.profile.surname %} {{ user.profile.surname }}{% endif %}
+                            {% else %}{{ user.last_name }} {{ user.first_name }} {% if user_profile and user_profile.surname %} {{ user_profile.surname }}{% endif %}
                             {% endif %}
                         </div>
                         <div class="small text-white-50">{{ user.email }}</div>
@@ -47,12 +48,12 @@
             </div> 
 
             <!-- Панель управления активным проектом -->
-            {% if user.is_authenticated and user.active_project and user.active_project.project %}
+            {% if user.is_authenticated and active_project_info %}
             <div class="d-flex flex-column justify-content-center align-items-end">
                 <small class="text-white-50 mb-1">активный проект</small>
                 <h2 class="mb-3">
-                    <a href="{% url 'project_detail' pk=user.active_project.project.pk %}" class="text-decoration-none text-white">
-                        {{ user.active_project.project.title }}
+                    <a href="{% url 'project_detail' pk=active_project_info.project.pk %}" class="text-decoration-none text-white">
+                        {{ active_project_info.project.title }}
                     </a>
                 </h2>
                 
@@ -60,8 +61,8 @@
                     <!-- Кнопка старта -->
                     <form id="start-form" class="me-2">
                         {% csrf_token %}
-                        <input type="hidden" name="project_id" value="{{ user.active_project.project.id }}">
-                        <button type="button" class="btn btn-link p-0 border-0" onclick="checkProgramsBeforeStart()">
+                        <input type="hidden" name="project_id" value="{{ active_project_info.project.id }}">
+                        <button type="button" class="btn btn-link p-0 border-0" onclick="startProject()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffffff77" class="bi bi-play-fill" viewBox="0 0 16 16">
                                 <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
                             </svg>
@@ -80,7 +81,8 @@
                     
                     <!-- Таймер -->
                     <div id="active-timer" class="fs-4" 
-                        data-started-at="{% if user.active_project.in_work %}{{ user.active_project.last_started_at|date:'U' }}{% endif %}">
+                        data-base-seconds="{{ active_project_info.base_seconds|default:0 }}"
+                        data-started-at="{% if active_project_info.in_work and active_project_info.started_at_epoch %}{{ active_project_info.started_at_epoch }}{% endif %}">
                         00:00:00
                     </div>
                 </div>
@@ -96,7 +98,7 @@
                 {% if user.is_authenticated %}
 
                     <!-- Добавлен раздел отдела, который появляется, если пользователь является начальником -->
-                    {% if user.profile.role == 'manager' %}
+                    {% if user.is_authenticated and user_profile and user_profile.role == 'manager' %}
                         <!-- Мой отдел -->
                         <div class="border border-white mb-3">
                             <a href="{% url 'my_team' %}" class="d-flex align-items-center text-white text-decoration-none p-3">
@@ -104,6 +106,29 @@
                                     <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"/>
                                 </svg>
                                 Мой отдел
+                            </a>
+                        </div>
+                    {% elif user.is_authenticated and user_profile and user_profile.role == 'sector_manager' %}
+                        <!-- Мой отдел -->
+                        <div class="border border-white mb-3">
+                            <a href="{% url 'my_team' %}" class="d-flex align-items-center text-white text-decoration-none p-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-people me-3" viewBox="0 0 16 16">
+                                    <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"/>
+                                </svg>
+                                Мой отдел
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if user.is_authenticated and user_profile and user_profile.role == 'director' %}
+                        <!-- Отчеты по компании -->
+                        <div class="border border-white mb-3">
+                            <a href="{% url 'company_reports' %}" class="d-flex align-items-center text-white text-decoration-none p-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bar-chart me-3" viewBox="0 0 16 16">
+                                  <path d="M0 0h1v15h15v1H0V0z"/>
+                                  <path d="M2 13h2V5H2v8zm4 0h2V1H6v12zm4 0h2V9h-2v4z"/>
+                                </svg>
+                                Отчеты по компании
                             </a>
                         </div>
                     {% endif %}
@@ -129,25 +154,35 @@
                     </div>
                 </div>
 
-                <!-- Выбор программ -->
-                <div class="border border-white mb-3">
-                    <a href="{% url 'programs' %}" class="d-flex align-items-center text-white text-decoration-none p-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cursor me-3" viewBox="0 0 16 16">
-                            <path d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .556.103zM2.25 8.184l3.897 1.67a.5.5 0 0 1 .262.263l1.67 3.897L12.743 3.52 2.25 8.184z" />
-                        </svg>
-                        Выбор программ
-                    </a>
-                </div>
 
                 <!-- Настройки -->
                 <div class="border border-white mb-3">
                     <a href="{% url 'profile' %}" class="d-flex align-items-center text-white text-decoration-none p-3">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-gear me-3" viewBox="0 0 16 16">
-                            <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z" />
+                            <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1 2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z" />
                         </svg>
                         Настройки
                     </a>
                 </div>
+
+                <!-- Задачи / Workflow -->
+                {% if user.is_authenticated %}
+                {% if user_profile and user_profile.role == 'manager' or user_profile and user_profile.role == 'sector_manager' or user_profile and user_profile.role == 'director' %}
+                <div class="border border-white mb-3">
+                    <a href="{% url 'project_review_queue' %}" class="d-flex align-items-center text-white text-decoration-none p-3 position-relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-clipboard-check me-3" viewBox="0 0 16 16">
+                            <path d="M10.854 7.146a.5.5 0 0 1 .792.61l-3 4a.5.5 0 0 1-.76.057L6 10.707l-.646.647a.5.5 0 0 1-.708-.708l1-1a.5.5 0 0 1 .708 0l.88.879z"/>
+                            <path d="M4 1.5H3a2 2 0 0 0-2 2V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z"/>
+                        </svg>
+                        Очередь на проверку
+                        {% if review_queue_count and review_queue_count > 0 %}
+                        <span class="badge bg-danger ms-2">{{ review_queue_count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+                {% endif %}
+                {% endif %}
                 {% endif %}
 
                 <!-- О приложении -->
@@ -230,91 +265,43 @@
         </div>
     </div>
 
-    <!-- Модальное окно выбора программы -->
-    <div class="modal fade" id="selectProgramModal" tabindex="-1" aria-labelledby="selectProgramModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="selectProgramModalLabel">Выберите программу</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="list-group">
-                        {% for program in user.work_programs.all %}
-                            <button type="button" 
-                                    class="list-group-item list-group-item-action program-select" 
-                                    data-program-id="{{ program.id }}">
-                                {{ program.name }}
-                            </button>
-                        {% empty %}
-                            <div class="text-muted">Нет выбранных программ</div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn text-white" style="background-color: rgb(6, 46, 101);" onclick="startProjectWithoutProgram()">Без программы</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Скрипт для таймера
         document.addEventListener('DOMContentLoaded', function() {
             const timerElement = document.getElementById('active-timer');
             if (!timerElement) return;
-            
-            const startedAt = timerElement.dataset.startedAt;
+
+            const baseSeconds = parseInt(timerElement.dataset.baseSeconds || '0', 10);
+            const startedAt = timerElement.dataset.startedAt; // epoch seconds or empty
+
+            function render(totalSeconds) {
+                const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+                const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+                const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+                timerElement.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+
             if (startedAt) {
                 function updateTimer() {
-                    const startTime = parseInt(startedAt) * 1000;
-                    const now = new Date().getTime();
-                    const diff = now - startTime;
-                    
-                    const hours = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');
-                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-                    const seconds = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
-                    
-                    timerElement.textContent = `${hours}:${minutes}:${seconds}`;
+                    const startTimeSec = parseInt(startedAt, 10);
+                    const nowSec = Math.floor(Date.now() / 1000);
+                    const running = Math.max(0, nowSec - startTimeSec);
+                    render(baseSeconds + running);
                 }
                 updateTimer();
                 setInterval(updateTimer, 1000);
+            } else {
+                // Показать зафиксированное время, если проект активен, но не запущен
+                render(baseSeconds);
             }
         });
 
-        // Функция запуска без программы
-        async function startProjectWithProgram(programId) {
-            const form = document.getElementById('start-form');
-            formData = new FormData(form);
-            formData.append('current_program_id', programId);
-            
-            await sendStartRequest(formData);
-        }
-        async function startProjectWithoutProgram() {
+        // Старт проекта
+        async function startProject() {
             const form = document.getElementById('start-form');
             const formData = new FormData(form);
-            
             await sendStartRequest(formData);
         }
-
-        // Проверка наличия выбранных программ
-        async function checkProgramsBeforeStart() {
-            const hasPrograms = {% if user.work_programs.exists %}true{% else %}false{% endif %};
-            
-            if (hasPrograms) {
-                new bootstrap.Modal(document.getElementById('selectProgramModal')).show();
-            } else {
-                await startProjectWithoutProgram();
-            }
-        }
-        
-        document.querySelectorAll('.program-select').forEach(button => {
-            button.addEventListener('click', function() {
-                const programId = this.getAttribute('data-program-id');
-                startProjectWithProgram(programId);
-            });
-        });
         
         // Обработка нажатия "Старт"
         async function sendStartRequest(formData) {
@@ -364,5 +351,94 @@
             }
         }
     </script>
+   <script>
+     // Auto-update review queue badge every 20s
+     async function refreshReviewBadge(){
+       try {
+         const res = await fetch('{% url "project_review_count" %}', {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+         if (!res.ok) return;
+         const data = await res.json();
+         const link = document.querySelector('a[href="{% url "project_review_queue" %}"]');
+         if (!link) return;
+         let badge = link.querySelector('.badge');
+         if (data.count && data.count > 0){
+           if (!badge){
+             badge = document.createElement('span');
+             badge.className = 'badge bg-danger ms-2';
+             link.appendChild(badge);
+           }
+           badge.textContent = data.count;
+           badge.style.display = '';
+         } else if (badge){
+           badge.style.display = 'none';
+         }
+       } catch(e){ /* silent */ }
+     }
+     document.addEventListener('DOMContentLoaded', function(){
+       refreshReviewBadge();
+       setInterval(refreshReviewBadge, 20000);
+     });
+   </script>
+
+   <!-- Timer auto-stop on application close -->
+   <script>
+     // Function to stop all running timers when page is unloaded
+     function stopAllTimersOnClose() {
+       // Use sendBeacon for reliable delivery during page unload
+       if (navigator.sendBeacon) {
+         const data = new FormData();
+         data.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+         navigator.sendBeacon('{% url "stop_all_timers_on_close" %}', data);
+       } else {
+         // Fallback: asynchronous fetch with keepalive
+         fetch('{% url "stop_all_timers_on_close" %}', {
+           method: 'POST',
+           body: new FormData(document.createElement('form')),
+           headers: {
+             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+           },
+           keepalive: true
+         }).catch(() => {
+           // Ignore errors
+         });
+       }
+     }
+
+     // Detect page unload (browser close, tab close, navigation away)
+     window.addEventListener('beforeunload', function(event) {
+       stopAllTimersOnClose();
+     });
+
+     // Also detect visibility change (tab switching, minimizing window)
+     document.addEventListener('visibilitychange', function() {
+       if (document.visibilityState === 'hidden') {
+         // Small delay to ensure the request goes through when tab becomes hidden
+         setTimeout(stopAllTimersOnClose, 100);
+       }
+     });
+   </script>
 </body>
+
+<!-- Toast notifications -->
+{% if messages %}
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+  {% for message in messages %}
+  <div class="toast align-items-center text-white bg-{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}primary{% endif %} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3500">
+    <div class="d-flex">
+      <div class="toast-body">
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+  {% endfor %}
+ </div>
+ <script>
+   document.addEventListener('DOMContentLoaded', function () {
+     var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+     toastElList.map(function (toastEl) { return new bootstrap.Toast(toastEl).show(); })
+   });
+ </script>
+{% endif %}
+</html>
 </html>

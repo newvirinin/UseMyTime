@@ -1,0 +1,63 @@
+@startuml UseMyTime25 UseCase Diagram - Сотрудник
+!theme plain
+skinparam actorStyle stickman
+skinparam usecase {
+    BackgroundColor LightBlue
+    BorderColor DarkBlue
+    ArrowColor DarkBlue
+}
+skinparam rectangle {
+    BackgroundColor LightYellow
+    BorderColor DarkOrange
+}
+
+title Диаграмма вариантов использования - Сотрудник
+
+left to right direction
+
+actor "Сотрудник" as Employee
+
+rectangle "UseMyTime25" {
+    rectangle "Аутентификация" as AuthBlock {
+        usecase "Вход в систему" as Login
+        usecase "Выход из системы" as Logout
+    }
+    
+    rectangle "Проекты и задачи" as ProjectBlock {
+        usecase "Создать проект" as CreateProject
+        usecase "Просмотреть проекты" as ViewProjects
+        usecase "Редактировать проект" as EditProject
+        usecase "Архивировать проект" as ArchiveProject
+        usecase "Добавить задачи" as AddTasks
+        usecase "Изменить статус задачи" as ChangeTaskStatus
+        usecase "Запустить таймер" as StartTimer
+        usecase "Остановить таймер" as StopTimer
+    }
+    
+    rectangle "Профиль" as ProfileBlock {
+        usecase "Просмотреть профиль" as ViewProfile
+        usecase "Редактировать профиль" as EditProfile
+    }
+    
+    rectangle "Общие" as CommonBlock {
+        usecase "Обратная связь" as Contact
+    }
+}
+
+Employee --> Login
+Employee --> Logout
+Employee --> ViewProjects
+Employee --> ArchiveProject
+Employee --> ChangeTaskStatus
+Employee --> Contact
+
+Login --> ViewProfile : <<include>>
+CreateProject --> AddTasks : <<include>>
+EditProject --> AddTasks : <<include>>
+ChangeTaskStatus --> StartTimer : <<include>>
+ViewProfile --> EditProfile : <<include>>
+StartTimer --> StopTimer : <<extend>>
+ViewProjects --> EditProject : <<include>>
+ViewProjects --> CreateProject : <<include>>
+
+@enduml

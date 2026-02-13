@@ -1,0 +1,28 @@
+@startuml UseMyTime25 UseCase Diagram - Гость
+!theme plain
+skinparam actorStyle stickman
+skinparam usecase {
+    BackgroundColor LightGreen
+    BorderColor DarkGreen
+    ArrowColor DarkGreen
+}
+skinparam rectangle {
+    BackgroundColor LightYellow
+    BorderColor DarkOrange
+}
+
+title Диаграмма вариантов использования - Гость
+
+left to right direction
+
+actor "Гость" as Guest
+
+rectangle "UseMyTime25" {
+    usecase "Регистрация" as Register
+    usecase "Главная страница" as HomePage
+}
+
+Guest --> Register
+Guest --> HomePage
+
+@enduml

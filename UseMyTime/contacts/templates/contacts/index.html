@@ -11,20 +11,12 @@
 {% endblock %}
 {% block content %}
     <h1>Контакты</h1>
-    {% for contact in contacts %}
-    <div class="fw-bold">{{ contact.position }}</div>
-    <div class="row">
-        <div class="col">{{ contact.get_full_name }}</div>
-        <div class="col">{{ contact.email }}</div>
-        <div class="col">{{ contact.get_formatted_phone }}</div>
-    </div>
-    <hr>
-    {% endfor %}
     <p>Задать вопрос разработчикам:</p>
     <form method="post" action="{% url 'ask' %}">
         {% csrf_token %}
-        <input type="text" name="name" placeholder="Имя"><br>
-        <input type="email" name="email" placeholder="Email"><br>
+        <div><strong>Имя:</strong> {{ default_name }}</div>
+        <div><strong>Email:</strong> {{ default_email }}</div>
+        <br>
         <textarea name="body" placeholder="Сообщение" 
             style="height: 150px; resize: None;"></textarea><br>
         <input type="submit" value="Отправить" class="btn text-white" 

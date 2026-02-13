@@ -7,3 +7,4 @@ typing_extensions==4.13.2
 tzdata==2025.2
 weasyprint==66.0
 gunicorn==21.2.0
+python-dotenv==1.0.1

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Мои задачи{% endblock %}
+{% block content %}
+<h1>Мои задачи</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Задача</th>
+      <th>Проект</th>
+      <th>Статус</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for task in object_list %}
+    <tr>
+      <td>{{ task.id }}</td>
+      <td>{{ task.text }}</td>
+      <td>{{ task.project.title }}</td>
+      <td>{{ task.get_status_display }}</td>
+      <td>
+        {% if task.status == 'new' %}
+        <form method="post" action="{% url 'task_start' task.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-primary">Начать</button>
+        </form>
+        {% elif task.status == 'in_progress' %}
+        <form method="post" action="{% url 'task_submit' task.id %}" style="display:inline; max-width:600px;">
+          {% csrf_token %}
+          <div class="mb-1">
+            <input type="text" name="artifacts" placeholder="Ссылки/артефакты (PR, коммиты, документы)" class="form-control form-control-sm" />
+          </div>
+          <div class="mb-1">
+            <input type="text" name="review_comment" placeholder="Краткий комментарий" class="form-control form-control-sm" />
+          </div>
+          <button class="btn btn-sm btn-warning">На проверку</button>
+        </form>
+        {% elif task.status == 'in_review' %}
+        Ожидает проверки
+        {% elif task.status == 'done' %}
+        Выполнено
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">Задач нет</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

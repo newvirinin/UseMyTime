@@ -1,0 +1,86 @@
+@startuml UseMyTime25 UseCase Diagram - Директор
+!theme plain
+skinparam actorStyle stickman
+skinparam usecase {
+    BackgroundColor LightCoral
+    BorderColor DarkRed
+    ArrowColor DarkRed
+}
+skinparam rectangle {
+    BackgroundColor LightYellow
+    BorderColor DarkOrange
+}
+
+title Диаграмма вариантов использования - Директор
+
+left to right direction
+
+actor "Директор" as Director
+
+rectangle "UseMyTime25" {
+    rectangle "Аутентификация" as AuthBlock {
+        usecase "Вход в систему" as Login
+        usecase "Выход из системы" as Logout
+    }
+    
+    rectangle "Проекты и задачи" as ProjectBlock {
+        usecase "Создать проект" as CreateProject
+        usecase "Просмотреть проекты" as ViewProjects
+        usecase "Редактировать проект" as EditProject
+        usecase "Архивировать проект" as ArchiveProject
+        usecase "Добавить задачи" as AddTasks
+        usecase "Изменить статус задачи" as ChangeTaskStatus
+        usecase "Запустить таймер" as StartTimer
+        usecase "Остановить таймер" as StopTimer
+    }
+    
+    rectangle "Профиль" as ProfileBlock {
+        usecase "Просмотреть профиль" as ViewProfile
+        usecase "Редактировать профиль" as EditProfile
+    }
+    
+    rectangle "Менеджмент" as ManagementBlock {
+        usecase "Просмотреть команду" as ViewTeam
+        usecase "Редактировать сотрудников" as EditEmployees
+        usecase "Сгенерировать отчет отдела" as DeptReport
+        usecase "Сгенерировать отчет сотрудника" as EmpReport
+    }
+    
+    rectangle "Администрирование" as AdminBlock {
+        usecase "Просмотреть отчеты компании" as CompanyReports
+        usecase "Управление отделами" as ManageDepts
+    }
+    
+    rectangle "Общие" as CommonBlock {
+        usecase "Обратная связь" as Contact
+    }
+}
+
+Director --> Login
+Director --> Logout
+Director --> ViewProfile
+Director --> EditProfile
+Director --> CreateProject
+Director --> ViewProjects
+Director --> EditProject
+Director --> ArchiveProject
+Director --> AddTasks
+Director --> ChangeTaskStatus
+Director --> StartTimer
+Director --> StopTimer
+Director --> ViewTeam
+Director --> EditEmployees
+Director --> DeptReport
+Director --> EmpReport
+Director --> CompanyReports
+Director --> ManageDepts
+Director --> Contact
+
+Login --> ViewProfile : <<include>>
+CreateProject --> AddTasks : <<include>>
+EditProject --> AddTasks : <<include>>
+ViewTeam --> ViewProfile : <<include>>
+EditEmployees --> ViewProfile : <<include>>
+ChangeTaskStatus --> StartTimer : <<include>>
+
+@enduml

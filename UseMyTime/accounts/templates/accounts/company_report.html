@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Отчёт по компании</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', 'Liberation Serif', serif;
+            font-size: 12pt;
+            line-height: 1;
+            margin: 2cm;
+            text-align: justify;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .subheader {
+            margin-bottom: 30px;
+        }
+
+        .subheader p {
+            margin: 8px 0px;
+        }
+
+        .header h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .department-section {
+            page-break-inside: avoid;
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 3px solid #000;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .department-header {
+            background: linear-gradient(135deg, #000 0%, #333 100%);
+            color: #fff;
+            padding: 15px 20px;
+            margin: -25px -25px 25px -25px;
+            border-radius: 7px 7px 0 0;
+            font-weight: bold;
+            font-size: 16pt;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .department-info {
+            background-color: #fff;
+            padding: 15px;
+            margin: 0 0 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .employee-section {
+            margin: 15px 0;
+            padding: 20px;
+            border: 2px solid #666;
+            border-radius: 8px;
+            background-color: #fff;
+            page-break-inside: avoid;
+        }
+
+        .employee-header {
+            background-color: #f0f0f0;
+            padding: 10px 15px;
+            margin: -20px -20px 15px -20px;
+            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+            border-bottom: 2px solid #666;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 11pt;
+        }
+
+        th, td {
+            padding: 8px;
+            vertical-align: top;
+            border: 1px solid #000;
+            page-break-inside: avoid;
+        }
+
+        th {
+            background-color: #e8e8e8;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .total {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border: 2px solid #000;
+            border-radius: 5px;
+        }
+
+        .total p {
+            margin: 8px 0px;
+        }
+
+        .department-total {
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            border: 3px solid #000;
+            font-weight: bold;
+            font-size: 12pt;
+        }
+
+        .company-total {
+            background: linear-gradient(135deg, #333 0%, #000 100%);
+            color: #fff;
+            border: 3px solid #000;
+            font-weight: bold;
+            font-size: 14pt;
+            margin-top: 50px;
+        }
+
+        @page {
+            size: A4;
+            margin: 2cm;
+            @bottom-center {
+                content: "Стр. " counter(page) " из " counter(pages);
+                font-size: 10pt;
+            }
+        }
+
+        /* Управление переносами и висячими строками */
+        p, li, td, th { 
+            hyphens: auto; 
+            orphans: 2; 
+            widows: 2; 
+        }
+
+        @media print {
+            body { margin: 0; }
+            .department-section {
+                box-shadow: none;
+            }
+        }
+
+        @media screen {
+            .print-btn {
+                margin: 20px 0;
+                padding: 10px 20px;
+                background: #2980b9;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+        }
+
+        @media print {
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Заголовок -->
+    <div class="header">
+        <h1>Отчёт по компании</h1>
+    </div>
+
+    <!-- Информация о отчете -->
+    <div class="subheader">
+        <p><strong>Отчет сформировал:</strong> {{ manager.user.last_name }} {{ manager.user.first_name }} {{ manager.surname }}</p>
+        <p><strong>Должность:</strong> {{ manager.position }}</p>
+        <p><strong>Дата формирования:</strong> {{ now|date:"d.m.Y" }}</p>
+        {% if start_date and end_date %}
+            <p><strong>Период:</strong> с {{ start_date|date:"d.m.Y" }} по {{ end_date|date:"d.m.Y" }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Группировка по отделам -->
+    {% for dept_total in department_totals %}
+        <div class="department-section">
+            <div class="department-header">
+                {{ dept_total.name }}
+            </div>
+            
+            <div class="department-info">
+                <p><strong>Отдел:</strong> {{ dept_total.name }}</p>
+                <p><strong>Количество сотрудников:</strong> {{ dept_total.employees|length }}</p>
+            </div>
+
+            <!-- Сотрудники отдела -->
+            {% for item in dept_total.employees %}
+                <div class="employee-section">
+                    <div class="employee-header">
+                        {{ item.employee.user.last_name }} {{ item.employee.user.first_name }} {{ item.employee.surname|default:"" }}
+                    </div>
+                    <p><strong>Должность:</strong> {{ item.employee.position }}</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 40%">Проект / Задачи</th>
+                                <th style="width: 20%">Дата создания</th>
+                                <th style="width: 20%">Дата завершения</th>
+                                <th style="width: 20%">Затрачено времени</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for proj in item.project_data %}
+                                <tr>
+                                    <td colspan="4" style="background:#f7f7f7; font-weight: bold;">
+                                        {{ proj.project.title }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="1"><em>Задачи:</em></td>
+                                    <td>{{ proj.created_at|date:"d.m.Y" }}</td>
+                                    <td>{{ proj.completed_at|date:"d.m.Y" }}</td>
+                                    <td>{{ proj.hours }} ч {{ proj.minutes }} мин {{ proj.seconds }} сек</td>
+                                </tr>
+                                {% for task in proj.tasks %}
+                                    <tr>
+                                        <td>— {{ task.text }}</td>
+                                        <td>{% if task.created_at %}{{ task.created_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
+                                        <td>{% if task.completed_at %}{{ task.completed_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
+                                        <td></td>
+                                    </tr>
+                                {% endfor %}
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" style="text-align:center; color:#666;">Нет выполненных задач</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <div class="total">
+                        <p><strong>Всего по сотруднику:</strong></p>
+                        <p><strong>Количество отработанных дней: </strong>{{ item.work_days }}</p>
+                        <p><strong>Выполнено задач: </strong>{{ item.total_tasks }} шт.</p>
+                        <p><strong>Общее затрачённое время: </strong>{{ item.total_hours }} ч {{ item.total_minutes }} мин {{ item.total_seconds }} сек</p>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Итого по отделу -->
+            <div class="total department-total">
+                <p><strong>ИТОГО ПО ОТДЕЛУ {{ dept_total.name|upper }}:</strong></p>
+                <p><strong>Всего выполнено задач:</strong> {{ dept_total.tasks }} шт.</p>
+                <p><strong>Общее затрачённое время: </strong>{{ dept_total.hours }} ч {{ dept_total.minutes }} мин {{ dept_total.seconds }} сек</p>
+            </div>
+        </div>
+    {% empty %}
+        <p>В компании нет сотрудников или нет выполненных задач.</p>
+    {% endfor %}
+
+    <!-- Общий итог по компании -->
+    <div class="total company-total">
+        <p><strong>ОБЩИЙ ИТОГ ПО КОМПАНИИ:</strong></p>
+        <p><strong>Всего выполнено задач:</strong> {{ dept_total_tasks }} шт.</p>
+        <p><strong>Общее затрачённое время: </strong>{{ dept_total_hours }} ч {{ dept_total_minutes }} мин {{ dept_total_seconds }} сек</p>
+        <p><strong>Количество отделов:</strong> {{ department_totals|length }}</p>
+    </div>
+
+    <!-- Блок подписи -->
+    <div style="margin-top: 50px; font-size: 12pt;">
+      <table width="100%" style="border-collapse: collapse; border: none;">
+        <tr>
+          <td width="50%" style="vertical-align: top; padding-right: 20px; border: none;">
+            <p><strong>Составил:</strong> {{ author.user.last_name }} {{ author.user.first_name }}{% if author.surname %} {{ author.surname }}{% endif %}</p>
+            <p><strong>Должность:</strong> {{ author.position }}</p>
+          </td>
+          <td width="50%" style="vertical-align: top; text-align: right; border: none;">
+            <div style="display: inline-block; text-align: left; border: 1px solid #000; border-radius: 10px; padding: 8px 12px; min-width: 260px; max-width: 45%; font-size: 10pt;">
+              <div style="text-align:center; font-weight: bold; margin-bottom: 6px;">Документ подписан простой электронной подписью</div>
+              <div style="background: #000; color: #fff; display:inline-block; padding: 3px 6px; border-radius: 4px; margin-bottom: 8px;">Сведения о сертификате ЭП</div>
+              <div><strong>Сертификат:</strong> <span style="word-break: break-all; overflow-wrap: anywhere;">{{ signature_hash }}</span></div>
+              <div><strong>Владелец:</strong> {{ author.user.last_name }} {{ author.user.first_name }}{% if author.surname %} {{ author.surname }}{% endif %}</div>
+              <div><strong>Срок действия:</strong> с {{ signature_valid_from|date:"d.m.Y" }} по {{ signature_valid_to|date:"d.m.Y" }}</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">Распечатать</button>
+</body>
+</html>

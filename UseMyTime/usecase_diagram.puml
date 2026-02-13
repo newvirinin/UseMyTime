@@ -1,0 +1,105 @@
+@startuml UseMyTime25 UseCase Diagram
+!theme plain
+skinparam actorStyle stickman
+skinparam usecase {
+    BackgroundColor LightBlue
+    BorderColor DarkBlue
+    ArrowColor DarkBlue
+}
+skinparam rectangle {
+    BackgroundColor LightYellow
+    BorderColor DarkOrange
+}
+
+title Диаграмма вариантов использования UseMyTime25
+
+left to right direction
+
+actor "Гость" as Guest
+actor "Сотрудник" as Employee
+actor "Начальник отдела" as Manager
+actor "Директор" as Director
+
+rectangle "UseMyTime25" {
+    rectangle "Аутентификация" as AuthBlock {
+        usecase "Вход в систему" as Login
+        usecase "Регистрация" as Register
+        usecase "Выход из системы" as Logout
+    }
+    
+    rectangle "Проекты и задачи" as ProjectBlock {
+        usecase "Создать проект" as CreateProject
+        usecase "Просмотреть проекты" as ViewProjects
+        usecase "Редактировать проект" as EditProject
+        usecase "Архивировать проект" as ArchiveProject
+        usecase "Добавить задачи" as AddTasks
+        usecase "Изменить статус задачи" as ChangeTaskStatus
+        usecase "Запустить таймер" as StartTimer
+        usecase "Остановить таймер" as StopTimer
+    }
+    
+    rectangle "Профиль" as ProfileBlock {
+        usecase "Просмотреть профиль" as ViewProfile
+        usecase "Редактировать профиль" as EditProfile
+    }
+    
+    rectangle "Менеджмент" as ManagementBlock {
+        usecase "Просмотреть команду" as ViewTeam
+        usecase "Редактировать сотрудников" as EditEmployees
+        usecase "Сгенерировать отчет отдела" as DeptReport
+        usecase "Сгенерировать отчет сотрудника" as EmpReport
+    }
+    
+    rectangle "Администрирование" as AdminBlock {
+        usecase "Просмотреть отчеты компании" as CompanyReports
+        usecase "Управление отделами" as ManageDepts
+    }
+    
+    rectangle "Общие" as CommonBlock {
+        usecase "Главная страница" as HomePage
+        usecase "Обратная связь" as Contact
+    }
+}
+
+' Связи акторов с прецедентами
+
+Guest --> Register
+Guest --> HomePage
+
+Employee --> Login
+Employee --> Logout
+Employee --> ViewProfile
+Employee --> EditProfile
+Employee --> CreateProject
+Employee --> ViewProjects
+Employee --> EditProject
+Employee --> ArchiveProject
+Employee --> AddTasks
+Employee --> ChangeTaskStatus
+Employee --> StartTimer
+Employee --> StopTimer
+Employee --> Contact
+
+Manager --> ViewTeam
+Manager --> EditEmployees
+Manager --> DeptReport
+Manager --> EmpReport
+
+Director --> CompanyReports
+Director --> ManageDepts
+
+' Отношения между прецедентами
+
+Login --> ViewProfile : <<include>>
+CreateProject --> AddTasks : <<include>>
+EditProject --> AddTasks : <<include>>
+ViewTeam --> ViewProfile : <<include>>
+EditEmployees --> ViewProfile : <<include>>
+ChangeTaskStatus --> StartTimer : <<include>>
+
+' Иерархия ролей
+
+Manager -up-|> Employee
+Director -up-|> Manager
+
+@enduml

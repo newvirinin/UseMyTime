@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}На проверке{% endblock %}
+{% block content %}
+<h1>Очередь на проверку</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Задача</th>
+      <th>Проект</th>
+      <th>Артефакты</th>
+      <th>Комментарий</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for task in object_list %}
+    <tr>
+      <td>{{ task.id }}</td>
+      <td>{{ task.text }}</td>
+      <td>{{ task.project.title }}</td>
+      <td>{{ task.artifacts|default:"—" }}</td>
+      <td>{{ task.review_comment|default:"" }}</td>
+      <td>
+        <form method="post" action="{% url 'task_approve' task.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-success">Принять</button>
+        </form>
+        <form method="post" action="{% url 'task_reject' task.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-danger">Вернуть</button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">Задач на проверке нет</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

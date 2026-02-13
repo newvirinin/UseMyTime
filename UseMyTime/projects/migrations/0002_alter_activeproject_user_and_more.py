@@ -9,7 +9,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('projects', '0001_initial'),
-        ('work_programs', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -18,16 +17,6 @@ class Migration(migrations.Migration):
             model_name='activeproject',
             name='user',
             field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='active_project', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AlterField(
-            model_name='projectprogram',
-            name='program',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='project_programs', to='work_programs.workprogram'),
-        ),
-        migrations.AlterField(
-            model_name='projectprogram',
-            name='project',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='project_programs', to='projects.project'),
         ),
         migrations.CreateModel(
             name='Task',

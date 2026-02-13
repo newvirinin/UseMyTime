@@ -57,4 +57,4 @@ class UserEditForm(forms.ModelForm):
 class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['photo', 'surname', 'position', 'phone_internal'] # Изменены используемые поля
+        fields = ['photo', 'surname', 'department', 'position', 'phone_internal'] # Изменены используемые поля

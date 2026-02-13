@@ -1,12 +1,24 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User as DjangoUser, Group as DjangoGroup
 
 # Роли
 ROLE_CHOICES = (
     ('employee', 'Сотрудник'),
     ('manager', 'Начальник отдела'),
+    ('sector_manager', 'Начальник сектора'),
     ('director', 'Генеральный директор'),
 )
+
+class Department(models.Model):
+    name = models.CharField('Название отдела', max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Отдел'
+        verbose_name_plural = 'Отделы'
 
 # Изменен порядок полей и добавлены новые
 class Profile(models.Model):
@@ -19,6 +31,7 @@ class Profile(models.Model):
                               blank=True,
                               verbose_name='Фото')
     role = models.CharField("Роль", max_length=20, choices=ROLE_CHOICES, default='employee')
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Отдел')
     # Добавлено поле для связи: кто начальник у этого сотрудника
     manager = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True,  null=True, related_name='subordinates',
                                 verbose_name="Начальник")
@@ -28,3 +41,19 @@ class Profile(models.Model):
     class Meta:
         verbose_name = 'Профиль'
         verbose_name_plural = 'Профили'
+
+# Прокси-модель Пользователь для отображения в разделе 'Профили'
+class UserProxy(DjangoUser):
+    class Meta:
+        proxy = True
+        app_label = 'accounts'
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Профили'
+
+# Прокси-модель Группа как 'Отделы' для переноса в раздел 'Профили'
+class GroupProxy(DjangoGroup):
+    class Meta:
+        proxy = True
+        app_label = 'accounts'
+        verbose_name = 'Отдел'
+        verbose_name_plural = 'Отделы'

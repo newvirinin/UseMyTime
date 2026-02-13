@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Отчёт по отделу</title>
@@ -7,7 +7,7 @@
         body {
             font-family: 'Times New Roman', 'Liberation Serif', serif;
             font-size: 12pt;
-            line-height: 1.5;
+            line-height: 1;
             margin: 2cm;
             text-align: justify;
         }
@@ -48,6 +48,7 @@
             padding: 6px;
             vertical-align: top;
             border: 1px solid #000;
+            page-break-inside: avoid;
         }
 
         th {
@@ -67,6 +68,21 @@
         @page {
             size: A4;
             margin: 2cm;
+            @bottom-center {
+                content: "Стр. " counter(page) " из " counter(pages);
+                font-size: 10pt;
+            }
+        }
+
+        /* Управление переносами и висячими строками */
+        p, li, td, th { 
+            hyphens: auto; 
+            orphans: 2; 
+            widows: 2; 
+        }
+
+        @media print {
+            body { margin: 0; }
         }
 
         @media screen {
@@ -97,47 +113,64 @@
     <!-- Информация о начальнике и дате формирования отчета -->
     <div class="subheader">
         <p><strong>Начальник отдела:</strong> {{ manager.user.last_name }} {{ manager.user.first_name }} {{ manager.surname }}</p>
+        <p><strong>Отдел:</strong> {% if manager.department %}{{ manager.department.name }}{% else %}-{% endif %}</p>
         <p><strong>Дата формирования:</strong> {{ now|date:"d.m.Y" }}</p>
+        {% if start_date and end_date %}
+            <p><strong>Период:</strong> с {{ start_date|date:"d.m.Y" }} по {{ end_date|date:"d.m.Y" }}</p>
+        {% endif %}
     </div>
 
     <!-- Информация по каждому сотруднику -->
     {% for item in team_report %}
-        {% if item.project_data %}
             <div class="employee-section">
                 <p><strong>ФИО сотрудника:</strong> {{ item.employee.user.last_name }} {{ item.employee.user.first_name }} {{ item.employee.surname|default:"" }}</p>
                 <p><strong>Должность:</strong> {{ item.employee.position }}</p>
+                <p><strong>Отдел:</strong> {% if item.employee.department %}{{ item.employee.department.name }}{% else %}-{% endif %}</p>
 
                 <table>
                     <thead>
                         <tr>
-                            <th>Проект</th>
-                            <th>Задача</th>
-                            <th>Дата создания</th>
-                            <th>Дата завершения</th>
-                            <th>Затрачено времени</th>
+                            <th style="width: 40%">Проект / Задачи</th>
+                            <th style="width: 20%">Дата создания</th>
+                            <th style="width: 20%">Дата завершения</th>
+                            <th style="width: 20%">Затрачено времени</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for proj in item.project_data %}
+                            <tr>
+                                <td colspan="4" style="background:#f7f7f7; font-weight: bold;">
+                                    {{ proj.project.title }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="1"><em>Задачи:</em></td>
+                                <td>{{ proj.created_at|date:"d.m.Y" }}</td>
+                                <td>{{ proj.completed_at|date:"d.m.Y" }}</td>
+                                <td>{{ proj.hours }} ч {{ proj.minutes }} мин {{ proj.seconds }} сек</td>
+                            </tr>
                             {% for task in proj.tasks %}
                                 <tr>
-                                    <td>{{ proj.project.title }}</td>
-                                    <td>{{ task.text }}</td>
-                                    <td>{{ proj.created_at|date:"d.m.Y" }}</td>
-                                    <td>{{ proj.completed_at|date:"d.m.Y" }}</td>
-                                    <td>{{ proj.hours }} ч {{ proj.minutes }} мин {{ proj.seconds }} сек</td>
+                                    <td>— {{ task.text }}</td>
+                                    <td>{% if task.created_at %}{{ task.created_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
+                                    <td>{% if task.completed_at %}{{ task.completed_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
+                                    <td></td>
                                 </tr>
                             {% endfor %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" style="text-align:center; color:#666;">Нет выполненных задач</td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>
                 <div class="total">
                     <p><strong>Всего по сотруднику:</strong></p>
+                    <p><strong>Количество отработанных дней: </strong>{{ item.work_days }}</p>
                     <p><strong>Выполнено задач: </strong>{{ item.total_tasks }} шт.</p>
                     <p><strong>Общее затрачённое время: </strong>{{ item.total_hours }} ч {{ item.total_minutes }} мин {{ item.total_seconds }} сек</p>
                 </div>
             </div>
-        {% endif %}
     {% empty %}
         <p>В отделе нет сотрудников или нет выполненных задач.</p>
     {% endfor %}
@@ -149,22 +182,24 @@
         <p><strong>Общее затрачённое время: </strong>{{ dept_total_hours }} ч {{ dept_total_minutes }} мин {{ dept_total_seconds }} сек</p>
     </div>
 
-    <div style="margin-top: 50px; font-size: 14px;">
-    <table width="100%" style="border-collapse: collapse; border: none;">
+    <div style="margin-top: 40px; font-size: 12pt;">
+      <table width="100%" style="border-collapse: collapse; border: none;">
         <tr>
-            <!-- Левая колонка: данные составителя -->
-            <td width="50%" style="vertical-align: top; padding-right: 20px; border: none;">
-                <p><strong>Составил:</strong></p>
-                <p><strong>Должность:</strong></p>
-            </td>
-            <!-- Правая колонка: подпись -->
-            <td width="50%" style="vertical-align: top; text-align: right; border: none;">
-                <p>Подпись: _________________</p>
-                <p>Расшифровка: _________________</p>
-                <p>Дата: «___» ____________ {{ now|date:"Y" }} г.</p>
-            </td>
+          <td width="50%" style="vertical-align: top; padding-right: 20px; border: none;">
+            <p><strong>Составил:</strong> {{ author.user.last_name }} {{ author.user.first_name }}{% if author.surname %} {{ author.surname }}{% endif %}</p>
+            <p><strong>Должность:</strong> {{ author.position }}</p>
+          </td>
+          <td width="50%" style="vertical-align: top; text-align: right; border: none;">
+            <div style="display: inline-block; text-align: left; border: 1px solid #000; border-radius: 10px; padding: 8px 12px; min-width: 260px; max-width: 45%; font-size: 10pt;">
+              <div style="text-align:center; font-weight: bold; margin-bottom: 6px;">Документ подписан простой электронной подписью</div>
+              <div style="background: #000; color: #fff; display:inline-block; padding: 3px 6px; border-radius: 4px; margin-bottom: 8px;">Сведения о сертификате ЭП</div>
+              <div><strong>Сертификат:</strong> <span style="word-break: break-all; overflow-wrap: anywhere;">{{ signature_hash }}</span></div>
+              <div><strong>Владелец:</strong> {{ author.user.last_name }} {{ author.user.first_name }}{% if author.surname %} {{ author.surname }}{% endif %}</div>
+              <div><strong>Срок действия:</strong> с {{ signature_valid_from|date:"d.m.Y" }} по {{ signature_valid_to|date:"d.m.Y" }}</div>
+            </div>
+          </td>
         </tr>
-    </table>
+      </table>
     </div>
 
     <button class="print-btn" onclick="window.print()">Распечатать</button>

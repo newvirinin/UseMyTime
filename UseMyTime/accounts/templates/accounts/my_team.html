@@ -78,8 +78,6 @@
                     <a href="{% url 'employee_report' employee_id=item.employee.id %}?format=pdf" class="btn btn-sm btn-outline-success"
                        target="_blank">Скачать отчёт в PDF</a>
                     <a href="{% url 'edit_employee' user_id=item.employee.user.id %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
-                    <a href="{% url 'remove_from_team' employee_id=item.employee.id %}" class="btn btn-sm btn-outline-danger"
-                       onclick="return confirm('Удалить {{ item.employee.user.last_name }} {{ item.employee.user.first_name }} ({{ item.employee.position }}) из команды?')">Удалить</a>
                 </div>
             </div>
         </div>
@@ -89,20 +87,7 @@
 {% endfor %}
 </div>
 
-<!-- Блок для добавления сотрудников в отдел -->
-<h2>Добавить сотрудника</h2>
-<form method="post">
-    {% csrf_token %}
-    <select name="employee_id" required>
-        <option value="">Выберите сотрудника</option>
-        {% for emp in available_employees %}
-            <option value="{{ emp.id }}">{{ emp.user.last_name }} {{ emp.user.first_name }} ({{ emp.position }})</option>
-        {% empty %}
-            <option disabled>Нет доступных сотрудников</option>
-        {% endfor %}
-    </select>
-    <button type="submit" class="btn btn-primary">Добавить в команду</button>
-</form>
+<!-- Блок добавления сотрудников убран: управление составом команды выполняет администратор через админ-панель. -->
 
 <!-- Кнопки для формирования отчета по всем сотрудникам в отделе -->
 <hr>

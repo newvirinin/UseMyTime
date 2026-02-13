@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('work_programs', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -34,23 +33,8 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('in_work', models.BooleanField(default=False)),
                 ('last_started_at', models.DateTimeField(auto_now=True)),
-                ('current_program', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='work_programs.workprogram')),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
                 ('project', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='projects.project')),
             ],
-        ),
-        migrations.CreateModel(
-            name='ProjectProgram',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('total_time', models.DurationField(default=datetime.timedelta(0))),
-                ('program', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='work_programs.workprogram')),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='projects.project')),
-            ],
-        ),
-        migrations.AddField(
-            model_name='project',
-            name='programs',
-            field=models.ManyToManyField(through='projects.ProjectProgram', through_fields=['project', 'program'], to='work_programs.workprogram'),
         ),
     ]

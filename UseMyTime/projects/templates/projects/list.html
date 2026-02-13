@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Мои проекты{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Мои проекты</h1>
+            <a href="{% url 'project_create' %}" 
+               class="btn text-white"
+               style="background-color: rgb(6, 46, 101); border-radius:0px;">
+                Создать проект
+            </a>
+        </div>
+        
+        {% if object_list %}
+            {% for project in object_list %}
+                <div class="project-item mb-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h3>{{ project.title }}</h3>
+                            <p class="text-muted mb-3">{{ project.description }}</p>
+                        </div>
+                        <div>
+                            <a href="{% url 'project_detail' project.pk %}" 
+                               class="btn text-white mb-2 me-2"
+                               style="background-color: rgb(6, 46, 101); border-radius:0px;">
+                                Открыть
+                            </a>
+                            <a href="{% url 'project_update' project.pk %}" 
+                               class="btn btn-outline-secondary mb-2 me-2">
+                                Редактировать
+                            </a>
+                            <a href="{% url 'project_delete' project.pk %}" 
+                               class="btn btn-outline-danger mb-2">
+                                Архивировать
+                            </a>
+                        </div>
+                    </div>
+                    {% if not forloop.last %}
+                        <hr class="my-4">
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                У вас нет активных проектов. <a href="{% url 'project_create' %}">Создайте первый проект</a>.
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

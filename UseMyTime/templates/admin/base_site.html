@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | Use My Time{% endblock %}
+
+{% block branding %}
+<h1 id="site-name" style="margin:0;">
+  <a href="{% url 'admin:index' %}" style="color:#fff; text-decoration:none;">
+    UseMyTime. Администратор
+  </a>
+  </h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  :root {
+    --umt-primary: rgb(6, 46, 101);
+    --umt-primary-dark: rgb(4, 32, 71);
+  }
+
+  /* Шапка админки в цветах системы */
+  #header { background-color: var(--umt-primary); border-bottom: 2px solid var(--umt-primary-dark); }
+  #header a, #branding h1, #branding h1 a { color: #fff !important; }
+
+  /* Заголовки модулей/блоков */
+  .module h2, .module caption, .inline-group h2 { background-color: var(--umt-primary); color: #fff; }
+  .module h2 a, .module caption a, .inline-group h2 a { color: #fff !important; }
+
+  /* Кнопки действий */
+  .object-tools a,
+  .button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background-color: var(--umt-primary); color: #fff; border-color: var(--umt-primary-dark);
+  }
+  .button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
+    background-color: var(--umt-primary); color: #fff; border-color: var(--umt-primary-dark);
+  }
+
+  /* Заголовки таблиц списков */
+  #result_list thead th { background-color: var(--umt-primary); color: #fff; }
+</style>
+{% endblock %}
+

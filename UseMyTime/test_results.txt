@@ -1,0 +1,63 @@
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+Found 6 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: messages, staticfiles
+  Apply all migrations: accounts, admin, auth, contacts, contenttypes, projects, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying accounts.0001_initial... OK
+  Applying accounts.0002_alter_profile_photo_alter_profile_surname... OK
+  Applying accounts.0003_alter_profile_options... OK
+  Applying accounts.0004_profile_first_name_profile_last_name_profile_manager_and_more... OK
+  Applying accounts.0005_department_alter_profile_first_name_and_more... OK
+  Applying accounts.0006_groupproxy_userproxy_remove_profile_first_name_and_more... OK
+  Applying accounts.0007_alter_profile_role... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying contacts.0001_initial... OK
+  Applying contacts.0002_alter_contact_options_alter_question_options_and_more... OK
+  Applying contacts.0003_alter_question_is_closed... OK
+  Applying contacts.0004_delete_contact... OK
+  Applying contacts.0005_question_user... OK
+  Applying projects.0001_initial... OK
+  Applying projects.0002_alter_activeproject_user_and_more... OK
+  Applying projects.0003_projecttimer... OK
+  Applying projects.0004_alter_activeproject_options_alter_project_options_and_more... OK
+  Applying projects.0005_task_artifacts_task_review_comment_task_reviewed_at_and_more... OK
+  Applying projects.0006_timeentry... OK
+  Applying projects.0007_remove_task_artifacts_remove_task_review_comment_and_more... OK
+  Applying projects.0008_project_submit_comment_projectattachment... OK
+  Applying projects.0009_task_completed_at_alter_task_is_done... OK
+  Applying projects.0010_projecttimer_current_task_alter_projecttimer_in_work... OK
+  Applying projects.0011_task_started_at... OK
+  Applying sessions.0001_initial...test_edit_employee_requires_manager_role (UseMyTime.accounts.tests.EditEmployeeViewTests.test_edit_employee_requires_manager_role) ... ok
+test_manager_can_open_edit_employee_page (UseMyTime.accounts.tests.EditEmployeeViewTests.test_manager_can_open_edit_employee_page) ... ok
+test_my_team_view_lists_subordinates (UseMyTime.accounts.tests.MyTeamViewTests.test_my_team_view_lists_subordinates) ... ok
+test_profile_view_creates_profile_for_authenticated_user (UseMyTime.accounts.tests.ProfileViewTests.test_profile_view_creates_profile_for_authenticated_user) ... ok
+test_profile_view_requires_authentication (UseMyTime.accounts.tests.ProfileViewTests.test_profile_view_requires_authentication) ... ok
+test_registration_form_rejects_duplicate_email (UseMyTime.accounts.tests.RegisterFormTests.test_registration_form_rejects_duplicate_email) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 9.249s
+
+OK
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+ OK
+System check identified no issues (0 silenced).

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Отчеты по компании{% endblock title %}
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">Отчеты по компании</h2>
+
+  <!-- Панель фильтров и поиска: две колонки -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header">Период отчета (по умолчанию — текущий месяц)</div>
+        <div class="card-body">
+          <form id="period-form" class="row g-2">
+            <div class="col-6">
+              <label class="form-label">С</label>
+              <input type="date" id="start_date" class="form-control" value="{{ default_start_date }}">
+            </div>
+            <div class="col-6">
+              <label class="form-label">По</label>
+              <input type="date" id="end_date" class="form-control" value="{{ default_end_date }}">
+            </div>
+          </form>
+          <small class="text-muted">Даты применяются при переходе по ссылкам и при экспорте в PDF.</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header">Быстрый поиск по сотрудникам</div>
+        <div class="card-body">
+          <input type="text" id="employee-search" class="form-control" placeholder="Введите фамилию, имя или отчество...">
+          <small class="text-muted">Поиск выполняется по списку ниже.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Отчеты по отделам</span>
+          <div>
+            <a href="#" class="btn btn-sm btn-outline-secondary me-2 build-href" data-base-href="{% url 'generate_report' %}" data-pdf="1">PDF: Все отделы</a>
+            <a href="#" class="btn btn-sm btn-primary build-href" data-base-href="{% url 'generate_report' %}">Открыть</a>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">Сформировать отчет по выбранному отделу или по всем отделам.</p>
+          <div class="list-group" id="dept-list">
+            {% for dept in departments %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <span>{{ dept.name }}</span>
+              <span>
+                <a href="#" class="btn btn-sm btn-outline-secondary me-2 build-href" data-base-href="{% url 'generate_report' %}?department={{ dept.id }}" data-pdf="1">PDF</a>
+                <a href="#" class="btn btn-sm btn-primary build-href" data-base-href="{% url 'generate_report' %}?department={{ dept.id }}">Открыть</a>
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">Отчеты по сотрудникам</div>
+        <div class="card-body">
+          <p class="text-muted">Сформировать отчет по каждому сотруднику компании.</p>
+          <div class="list-group" id="employee-list" style="max-height: 420px; overflow-y: auto;">
+            {% for emp in employees %}
+            <div class="list-group-item d-flex justify-content-between align-items-center employee-item">
+              <span>
+                <span class="emp-fio">{{ emp.user.last_name }} {{ emp.user.first_name }}{% if emp.surname %} {{ emp.surname }}{% endif %}</span>
+                {% if emp.department %}<span class="text-muted"> — {{ emp.department.name }}</span>{% endif %}
+              </span>
+              <span>
+                <a href="#" class="btn btn-sm btn-outline-secondary me-2 build-href" data-base-href="{% url 'employee_report' emp.id %}" data-pdf="1">PDF</a>
+                <a href="#" class="btn btn-sm btn-primary build-href" data-base-href="{% url 'employee_report' emp.id %}">Открыть</a>
+              </span>
+            </div>
+            {% empty %}
+            <div class="text-muted">Нет сотрудников</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Собираем href с периодом и (опционально) format=pdf
+  function buildHref(baseHref, pdf) {
+    const start = document.getElementById('start_date').value;
+    const end = document.getElementById('end_date').value;
+    const url = new URL(baseHref, window.location.origin);
+    if (start) url.searchParams.set('start_date', start);
+    if (end) url.searchParams.set('end_date', end);
+    if (pdf) url.searchParams.set('format', 'pdf');
+    return url.pathname + (url.search ? url.search : '');
+  }
+
+  document.querySelectorAll('.build-href').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const baseHref = a.getAttribute('data-base-href');
+      const pdf = a.getAttribute('data-pdf') === '1';
+      const href = buildHref(baseHref, pdf);
+      if (pdf) {
+        window.location.href = href;
+      } else {
+        window.location.assign(href);
+      }
+    });
+  });
+
+  // Поиск по сотрудникам (клиентский)
+  const searchInput = document.getElementById('employee-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('#employee-list .employee-item').forEach(item => {
+        const fio = item.querySelector('.emp-fio').textContent.toLowerCase();
+        item.style.display = fio.includes(q) ? '' : 'none';
+      });
+    });
+  }
+</script>
+{% endblock content %}
