@@ -1,0 +1,12 @@
+services:
+  # Web Service
+  - type: web
+    name: UseMyTime
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "DJANGO_SETTINGS_MODULE=UseMyTime.settings gunicorn UseMyTime.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: UseMyTime.settings
+    autoDeploy: true
