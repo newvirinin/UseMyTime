@@ -1,16 +1,28 @@
-#!/usr/bin/env bash
-# Exit on error
-set -o errexit
+#!/bin/bash
 
-# Install dependencies
-pip install -r requirements.txt
+echo "Starting UseMyTime deployment..."
+echo ""
+
+# Check configuration
+echo "Checking configuration..."
+python check_railway_config.py
+if [ $? -ne 0 ]; then
+    echo "❌ Configuration check failed!"
+    exit 1
+fi
+echo ""
 
 # Collect static files
+echo "Collecting static files..."
 python UseMyTime/manage.py collectstatic --no-input
+echo ""
 
-# Apply database migrations
-python UseMyTime/manage.py migrate
+# Run migrations
+echo "Running migrations..."
+python UseMyTime/manage.py migrate --no-input
+echo ""
 
-# Start gunicorn
-cd UseMyTime
-gunicorn --bind 0.0.0.0:$PORT wsgi:application
+# Start Gunicorn
+echo "Starting Gunicorn..."
+echo "Binding to 0.0.0.0:$PORT"
+gunicorn --chdir UseMyTime --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - wsgi:application
