@@ -1,0 +1,76 @@
+@startuml
+
+actor "Начальник отдела" as Manager
+participant "Веб-интерфейс" as Browser
+participant "Django Backend" as Django
+database "База данных" as DB
+
+Manager -> Browser: Переход в раздел "Мой отдел"
+Browser -> Django: GET /accounts/my-team/
+
+Django -> DB: SELECT * FROM accounts_profile WHERE manager_id = ? (подчиненные)
+DB --> Django: Список подчиненных
+
+Django -> DB: SELECT * FROM projects_project WHERE user_id IN (subordinates_ids) AND is_archived=False
+DB --> Django: Проекты подчиненных
+
+Django -> DB: SELECT * FROM projects_task WHERE project_id IN (project_ids)
+DB --> Django: Задачи по проектам
+
+note right of Django
+Расчет дефолтного периода:
+- default_start (первый день месяца)
+- default_end (последний день месяца)
+end note
+
+Django --> Browser: HTML с данными и модальным окном
+Browser --> Manager: Отображение отчета с проектами и задачами\nКлик на сотрудника для просмотра деталей
+
+Manager -> Browser: Клик "Сформировать отчет по сотруднику"\nили "Сформировать отчет по отделу"
+
+note over Browser
+Открытие модального окна с выбором:
+- Дата начала (start_date)
+- Дата окончания (end_date)  
+- Формат отчета (HTML/PDF)
+end note
+
+Browser -> Browser: Заполнение параметров в модальном окне
+
+Browser -> Django: GET /accounts/report/?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&format=pdf
+
+note right of Django
+Парсинг параметров запроса:
+- start_date
+- end_date
+- format (pdf/html)
+end note
+
+Django -> DB: SELECT * FROM accounts_profile WHERE manager_id = ? (подчиненные)
+DB --> Django: Список подчиненных для отчета
+
+Django -> DB: SELECT * FROM projects_project WHERE user_id = ? AND is_archived=False AND review_status='approved'
+DB --> Django: Принятые проекты
+
+Django -> DB: SELECT * FROM projects_task WHERE project_id IN (...) AND is_done=True\nAND completed_at >= start_date AND completed_at <= end_date
+DB --> Django: Выполненные задачи за период
+
+note right of Django
+Агрегация данных по сотрудникам:
+- Расчет времени по проектам
+- Подсчет задач
+- Формирование итогов
+end note
+
+Django -> Django: Формирование HTML отчета
+
+alt format=pdf
+    Django -> Django: Генерация PDF через WeasyPrint
+    Django --> Browser: PDF документ
+    Browser --> Manager: Скачивание PDF отчета по сотруднику
+else format=html
+    Django --> Browser: HTML страница с отчетом
+    Browser --> Manager: Отображение отчета в браузере
+end
+
+@enduml

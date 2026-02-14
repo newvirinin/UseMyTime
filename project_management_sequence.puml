@@ -1,0 +1,54 @@
+@startuml
+
+participant "Сотрудник" as Employee
+participant "Начальник отдела" as Manager
+participant "Веб-интерфейс" as Browser
+participant "Django Backend" as Django
+database "База данных" as DB
+
+Employee -> Browser: Переход в раздел "Мои проекты"
+Browser -> Django: GET /projects/
+
+Django -> DB: SELECT * FROM projects_project WHERE user_id=? AND is_archived=False
+DB --> Django: Активные проекты пользователя
+
+Django --> Browser: HTML со списком проектов
+Browser --> Employee: Отображение проектов с кнопками управления
+
+Employee -> Browser: Нажатие "Создать проект"
+Browser --> Employee: Модальное окно формы проекта
+
+Employee -> Browser: Ввод названия, описание проекта
+Browser -> Django: POST /projects/create/
+
+Django -> DB: INSERT INTO projects_project (title, description, user_id)
+DB --> Django: ID созданного проекта
+
+Django --> Browser: Redirect на список проектов
+Browser --> Employee: Проект успешно создан
+
+Employee -> Browser: Выбор проекта для работы
+Browser -> Django: GET /projects/detail/pk
+
+Django -> DB: SELECT * FROM projects_project WHERE id=?
+DB --> Django: Данные проекта
+
+Django -> DB: SELECT * FROM projects_task WHERE project_id=?
+DB --> Django: Детали проекта и задачи
+
+Django --> Browser: HTML с детальной страницей проекта
+Browser --> Employee: Отображение проекта с таймером и задачами
+
+Manager -> Browser: Просмотр команды
+Browser -> Django: GET /accounts/my-team/
+
+Django -> DB: SELECT * FROM accounts_profile WHERE manager_id=?
+DB --> Django: Подчиненные сотрудники
+
+Django -> DB: SELECT * FROM projects_project WHERE user_id IN (subordinates)
+DB --> Django: Проекты подчиненных
+
+Django --> Browser: HTML со списком сотрудников и их проектов
+Browser --> Manager: Отображение команды с проектами
+
+@enduml

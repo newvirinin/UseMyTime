@@ -57,7 +57,7 @@ class Project(models.Model):
         return self.title
 
 # Модель активного проекта
-# Для него и будет учитываться время
+# Используется для отслеживания текущего проекта пользователя
 class ActiveProject(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL,
                                 on_delete=models.CASCADE,
@@ -73,6 +73,7 @@ class ActiveProject(models.Model):
         verbose_name_plural = 'Активные проекты'
 
 # Таймеры по проектам (независимые, можно запускать несколько одновременно)
+# Позволяют вести учёт времени по разным проектам одновременно
 class ProjectTimer(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='project_timers', verbose_name='Пользователь')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='timers', verbose_name='Проект')
@@ -123,7 +124,6 @@ class Task(models.Model):
         default='new',
         verbose_name='Статус'
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
     class Meta:
         verbose_name = 'Задача'
@@ -132,7 +132,7 @@ class Task(models.Model):
     def __str__(self):
         return self.text
 
-
+# Вложения к задачам
 class TaskAttachment(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='attachments', verbose_name='Задача')
     file = models.FileField(upload_to='task_attachments/%Y/%m/%d/', verbose_name='Файл')
@@ -142,7 +142,8 @@ class TaskAttachment(models.Model):
         verbose_name = 'Вложение задачи'
         verbose_name_plural = 'Вложения задач'
 
-
+# Записи о потраченном времени
+# Хранят детальную информацию о сессиях работы
 class TimeEntry(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='time_entries', verbose_name='Пользователь')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='time_entries', verbose_name='Проект')
@@ -156,7 +157,8 @@ class TimeEntry(models.Model):
         verbose_name = 'Запись времени'
         verbose_name_plural = 'Записи времени'
 
-
+# Вложения к проектам
+# Файлы, прикреплённые при отправке на проверку
 class ProjectAttachment(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='attachments', verbose_name='Проект')
     file = models.FileField(upload_to='project_attachments/%Y/%m/%d/', verbose_name='Файл')

@@ -1,0 +1,56 @@
+@startuml
+
+participant "Начальник отдела" as Manager
+participant "Веб-интерфейс" as Browser
+participant "JavaScript таймер" as JS
+participant "Django Backend" as Django
+database "База данных" as DB
+
+Manager -> Browser: Переход в раздел "Мой отдел"
+Browser -> Django: GET /accounts/my-team/
+
+Django -> DB: SELECT * FROM accounts_profile WHERE manager_id=?
+DB --> Django: Список подчиненных
+
+Django -> DB: SELECT * FROM projects_project WHERE user_id IN (...)
+DB --> Django: Проекты подчиненных
+
+Django -> DB: SELECT * FROM projects_task WHERE project_id IN (...)
+DB --> Django: Задачи по проектам
+
+Django --> Browser: HTML с проектами и задачами
+Browser --> Manager: Отображение списка сотрудников
+
+Manager -> Browser: Клик "Сформировать отчет по отделу"
+Browser -> Browser: Открытие модального окна
+
+Manager -> Browser: Выбор параметров отчета:\n- Дата начала (start_date)\n- Дата окончания (end_date)\n- Формат (HTML/PDF)
+
+Manager -> Browser: Нажатие кнопки "Сформировать отчет"
+Browser -> JS: generateReport()
+JS -> JS: Формирование URL с параметрами
+
+Browser -> Django: GET /accounts/report/?start_date=...&end_date=...&format=pdf
+
+Django -> DB: SELECT * FROM accounts_profile WHERE manager_id=?
+DB --> Django: Подчиненные для отчета
+
+Django -> DB: SELECT * FROM projects_project WHERE review_status='approved'
+DB --> Django: Принятые проекты
+
+Django -> DB: SELECT * FROM projects_task WHERE completed_at BETWEEN start_date AND end_date
+DB --> Django: Задачи за выбранный период
+
+Django -> Django: Агрегация данных по сотрудникам
+Django -> Django: Расчет времени и статистики
+
+alt format=pdf
+    Django -> Django: Генерация PDF через WeasyPrint
+    Django --> Browser: PDF документ
+    Browser --> Manager: Скачивание PDF отчета
+else format=html
+    Django --> Browser: HTML страница с отчетом
+    Browser --> Manager: Отображение отчета в браузере
+end
+
+@enduml

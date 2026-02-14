@@ -13,8 +13,12 @@ urlpatterns = [
     path('activate/', views.project_activate, name='projects_activate'),
     path('start/', views.project_start, name='projects_start'),
     path('stop/', views.project_stop, name='projects_stop'),
+    path('my-tasks/', views.MyTasksView.as_view(), name='my_tasks'),
     path('task/<int:id>', views.change_task_status, name='change_task_status'),
+    path('task/<int:id>/start/', views.change_task_status, name='task_start'),
+    path('task/<int:id>/submit/', views.change_task_status, name='task_submit'),
     path('timer/start/', views.project_timer_start, name='project_timer_start'),
+    path('timer/stop/', views.project_timer_stop, name='project_timer_stop'),
     path('timer/stop_all/', views.stop_all_timers_on_close, name='stop_all_timers_on_close'),
     # Project review workflow
     path('projects/review/', views.ProjectReviewQueueView.as_view(), name='project_review_queue'),

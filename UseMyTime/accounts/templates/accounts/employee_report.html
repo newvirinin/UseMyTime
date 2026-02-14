@@ -5,183 +5,241 @@
     <title>Отчёт по сотруднику</title>
     <style>
         body {
-            font-family: 'Times New Roman', 'Liberation Serif', serif;
-            font-size: 12pt;
-            line-height: 1;
-            margin: 2cm;
-            text-align: justify;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            font-size: 14pt;
-            font-weight: bold;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .info {
-            margin: 20px 0;
-        }
-
-        .info p {
-            margin: 8px 0;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 20px;
+            color: #000;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 12pt;
+            margin: 10px 0;
+            font-size: 11px;
         }
 
         th, td {
-            padding: 6px;
-            vertical-align: top;
             border: 1px solid #000;
-            page-break-inside: avoid;
+            padding: 6px;
+            text-align: left;
+            vertical-align: top;
         }
 
         th {
             background-color: #f0f0f0;
             font-weight: bold;
-            text-align: left;
         }
 
-        .total {
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .info {
             margin-bottom: 20px;
         }
 
-        .total p {
-            margin: 8px 0px;
+        .project-section {
+            margin-bottom: 15px;
+        }
+
+        .project-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            font-size: 11px;
+        }
+
+        .task-table th, .task-table td {
+            border: 1px solid #000;
+            padding: 4px;
+            text-align: left;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .stats-table td {
+            padding: 6px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .stats-label {
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+
+        .stats-value {
+            font-size: 12px;
+        }
+
+        .no-tasks {
+            text-align: center;
+            padding: 15px;
+            margin: 15px 0;
+            font-style: italic;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: #e0e0e0;
+        }
+
+        .summary {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: table;
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        .stat-row {
+            display: table-row;
+        }
+
+        .stat-cell {
+            display: table-cell;
+            padding: 8px;
+            border: 1px solid #000;
         }
 
         @page {
             size: A4;
-            margin: 2cm;
-            @bottom-center {
-                content: "Стр. " counter(page) " из " counter(pages);
-                font-size: 10pt;
-            }
-        }
-
-        /* Управление переносами и висячими строками */
-        p, li, td, th {
-            hyphens: auto;
-            orphans: 2;
-            widows: 2;
+            margin: 1cm;
         }
 
         @media print {
             body { margin: 0; }
-        }
-
-        @media screen {
-            .print-btn {
-                margin: 20px 0;
-                padding: 10px 20px;
-                background: #2980b9;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-        }
-
-        @media print {
-            .print-btn {
-                display: none;
-            }
+            .no-print { display: none !important; }
         }
     </style>
 </head>
 <body>
-
-    <!-- Заголовок -->
     <div class="header">
-        <h1>Отчёт по сотруднику</h1>
+        ОТЧЁТ ПО СОТРУДНИКУ
+        <br>
+        {% if start_date and end_date %}
+        Период: с {{ start_date|date:"d.m.Y" }} по {{ end_date|date:"d.m.Y" }}
+        {% else %}
+        Текущий месяц
+        {% endif %}
     </div>
 
-    <!-- Информация о сотруднике -->
     <div class="info">
-        <p><strong>ФИО сотрудника:</strong> {{ employee.user.last_name }} {{ employee.user.first_name }} {% if employee.surname %}{{ employee.surname }}{% endif %}</p>
-        <p><strong>Должность:</strong> {{ employee.position }}</p>
-        <p><strong>Отдел:</strong> {% if employee.department %}{{ employee.department.name }}{% else %}-{% endif %}</p>
-        <p><strong>Дата формирования:</strong> {{ now|date:"d.m.Y" }}</p>
+        <strong>Сотрудник:</strong> {{ employee.user.last_name }} {{ employee.user.first_name }} {% if employee.surname %}{{ employee.surname }}{% endif %}<br>
+        <strong>Должность:</strong> {{ employee.position }}<br>
+        <strong>Отдел:</strong> {% if employee.department %}{{ employee.department.name }}{% else %}Не указан{% endif %}<br>
+        <strong>Дата формирования:</strong> {{ now|date:"d.m.Y" }}
     </div>
 
-    <!-- Таблица задач -->
-        <table>
+    {% for item in report_data %}
+    <div class="project-section">
+        <div class="project-title">
+            {{ item.project.title }}
+        </div>
+
+        <table class="task-table">
             <thead>
                 <tr>
-                    <th style="width: 40%">Проект / Задачи</th>
-                    <th style="width: 20%">Дата создания</th>
-                    <th style="width: 20%">Дата завершения</th>
-                    <th style="width: 20%">Затрачено времени</th>
+                    <th style="width: 35%">Задача</th>
+                    <th style="width: 20%">Время начала</th>
+                    <th style="width: 20%">Время завершения</th>
+                    <th style="width: 20%">Время</th>
                 </tr>
             </thead>
             <tbody>
-                {% for item in report_data %}
-                    <tr>
-                        <td colspan="4" style="background:#f7f7f7; font-weight: bold;">
-                            {{ item.project.title }}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="1"><em>Задачи:</em></td>
-                        <td>{{ item.created_at|date:"d.m.Y" }}</td>
-                        <td>{{ item.completed_at|date:"d.m.Y" }}</td>
-                        <td>{{ item.hours }} ч {{ item.minutes }} мин {{ item.seconds }} сек</td>
-                    </tr>
-                    {% for task in item.tasks %}
-                        <tr>
-                            <td>— {{ task.text }}</td>
-                            <td>{% if task.created_at %}{{ task.created_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
-                            <td>{% if task.completed_at %}{{ task.completed_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
-                            <td></td>
-                        </tr>
-                    {% endfor %}
-                {% empty %}
-                    <tr>
-                        <td colspan="4" style="text-align:center; color:#666;">Нет выполненных задач</td>
-                    </tr>
+                {% for task_data in item.tasks %}
+                <tr>
+                    <td>{{ task_data.task.text }}</td>
+                    <td>{% if task_data.started_at %}{{ task_data.started_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
+                    <td>{% if task_data.completed_at %}{{ task_data.completed_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
+                    <td>—</td>
+                </tr>
                 {% endfor %}
+                <tr class="total-row">
+                    <td colspan="3"><strong>Итого по проекту:</strong></td>
+                    <td><strong>{{ item.hours }} ч {{ item.minutes }} мин</strong></td>
+                </tr>
             </tbody>
         </table>
+    </div>
+    {% endfor %}
 
-        <div class="total">
-            <p><strong>Всего выполнено задач: </strong>{{ completed_tasks|length }} шт.</p>
-            <p><strong>Общее затрачённое время: </strong>{{ total_hours }} ч {{ total_minutes }} мин {{ total_seconds }} сек</p>
-            <p><strong>Отработано (рабочие дни по 8 часов): </strong>{{ work_days }} дн.</p>
-        </div>
+    {% if not report_data %}
+    <div class="no-tasks">
+        Выполненных проектов нет
+    </div>
+    {% endif %}
 
-    <!-- Блок подписи (ПЭП) -->
-    <div style="margin-top: 40px; font-size: 12pt;">
-      <table width="100%" style="border-collapse: collapse; border: none;">
-        <tr>
-          <td width="50%" style="vertical-align: top; padding-right: 20px; border: none;">
-            <p><strong>Составил:</strong> {{ author.user.last_name }} {{ author.user.first_name }}{% if author.surname %} {{ author.surname }}{% endif %}</p>
-            <p><strong>Должность:</strong> {{ author.position }}</p>
-          </td>
-          <td width="50%" style="vertical-align: top; text-align: right; border: none;">
-            <div style="display: inline-block; text-align: left; border: 1px solid #000; border-radius: 10px; padding: 8px 12px; min-width: 260px; max-width: 45%; font-size: 10pt;">
-              <div style="text-align:center; font-weight: bold; margin-bottom: 6px;">Документ подписан простой электронной подписью</div>
-              <div style="background: #000; color: #fff; display:inline-block; padding: 3px 6px; border-radius: 4px; margin-bottom: 8px;">Сведения о сертификате ЭП</div>
-              <div><strong>Сертификат:</strong> <span style="word-break: break-all; overflow-wrap: anywhere;">{{ signature_hash }}</span></div>
-              <div><strong>Владелец:</strong> {{ author.user.last_name }} {{ author.user.first_name }}{% if author.surname %} {{ author.surname }}{% endif %}</div>
-              <div><strong>Срок действия:</strong> с {{ signature_valid_from|date:"d.m.Y" }} по {{ signature_valid_to|date:"d.m.Y" }}</div>
-            </div>
-          </td>
-        </tr>
-      </table>
+    <table class="stats-table">
+        <tbody>
+            <tr>
+                <td>
+                    <div class="stats-label">Выполнено задач</div>
+                    <div class="stats-value">{{ completed_tasks|length }}</div>
+                </td>
+                <td>
+                    <div class="stats-label">Общее время</div>
+                    <div class="stats-value">{{ total_hours }} ч {{ total_minutes }} мин</div>
+                </td>
+                <td>
+                    <div class="stats-label">Отработано дней</div>
+                    <div class="stats-value">{{ work_days }} (8 ч/день)</div>
+                </td>
+                <td>
+                    <div class="stats-label">Эффективность</div>
+                    <div class="stats-value">
+                        {% if work_days > 0 %}
+                            {{ efficiency_hours_per_day }} ч/день
+                        {% else %}
+                            0 ч/день
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Электронная подпись -->
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #000;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="width: 50%; vertical-align: top; padding: 10px;">
+                    <strong>Составил:</strong><br>
+                    ____________________<br>
+                    {{ author.user.last_name }} {{ author.user.first_name }}{% if author.surname %} {{ author.surname }}{% endif %}<br>
+                    {{ author.position }}
+                </td>
+                <td style="width: 50%; vertical-align: top; padding: 10px;">
+                    <strong>Электронная подпись:</strong><br>
+                    <div style="border: 1px solid #000; padding: 10px; margin-top: 5px;">
+                        <strong>Владелец:</strong> {{ author.user.last_name }} {{ author.user.first_name }}{% if author.surname %} {{ author.surname }}{% endif %}<br>
+                        <strong>Срок действия:</strong> с {{ signature_valid_from|date:"d.m.Y" }} по {{ signature_valid_to|date:"d.m.Y" }}<br>
+                        <strong>Хэш сертификата:</strong> {{ signature_hash }}
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 
-    <button class="print-btn" onclick="window.print()">Распечатать</button>
-
-</body>
-</html>
+    <div class="no-print" style="margin-top: 20px; text-align: center;">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #f0f0f0; border: 1px solid #000; cursor: pointer;">
+            Распечатать
+        </button>
+    </div>

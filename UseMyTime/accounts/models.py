@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User as DjangoUser, Group as DjangoGroup
 
-# Роли
+# Роли пользователей в системе
 ROLE_CHOICES = (
     ('employee', 'Сотрудник'),
     ('manager', 'Начальник отдела'),
@@ -20,7 +20,8 @@ class Department(models.Model):
         verbose_name = 'Отдел'
         verbose_name_plural = 'Отделы'
 
-# Изменен порядок полей и добавлены новые
+# Модель профиля пользователя
+# Расширяет стандартного пользователя Django дополнительными полями
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL,
                                 on_delete=models.CASCADE)
@@ -42,7 +43,8 @@ class Profile(models.Model):
         verbose_name = 'Профиль'
         verbose_name_plural = 'Профили'
 
-# Прокси-модель Пользователь для отображения в разделе 'Профили'
+# Прокси-модель пользователя для отображения в административной части
+# Позволяет настроить интерфейс администрирования отдельно от стандартного User
 class UserProxy(DjangoUser):
     class Meta:
         proxy = True
@@ -50,7 +52,8 @@ class UserProxy(DjangoUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Профили'
 
-# Прокси-модель Группа как 'Отделы' для переноса в раздел 'Профили'
+# Прокси-модель группы как отдела для административного интерфейса
+# Позволяет настраивать отделы через стандартный интерфейс Django
 class GroupProxy(DjangoGroup):
     class Meta:
         proxy = True

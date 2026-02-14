@@ -19,6 +19,8 @@ if DEBUG:
         'http://localhost:8000',
         'http://127.0.0.1:50009',
         'http://localhost:50009',
+        'http://127.0.0.1:52283',
+        'http://localhost:52283',
     ]
 
 INSTALLED_APPS = [

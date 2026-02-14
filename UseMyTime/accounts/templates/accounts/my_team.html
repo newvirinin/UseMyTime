@@ -73,11 +73,66 @@
 
                 <!-- Кнопки управления -->
                 <div class="mt-2">
-                    <a href="{% url 'employee_report' employee_id=item.employee.id %}" class="btn btn-sm btn-success"
-                       target="_blank">Сформировать отчёт</a>
-                    <a href="{% url 'employee_report' employee_id=item.employee.id %}?format=pdf" class="btn btn-sm btn-outline-success"
-                       target="_blank">Скачать отчёт в PDF</a>
+                    <button type="button" class="btn btn-sm btn-success" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#employeeReportModal{{ item.employee.id }}">
+                        Сформировать отчёт
+                    </button>
                     <a href="{% url 'edit_employee' user_id=item.employee.user.id %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
+                </div>
+                
+                <!-- Модальное окно для отчета по сотруднику -->
+                <div class="modal fade" id="employeeReportModal{{ item.employee.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Отчет по сотруднику: {{ item.employee.user.last_name }} {{ item.employee.user.first_name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="employeeReportForm{{ item.employee.id }}">
+                                    <div class="mb-3">
+                                        <label for="emp_start_date{{ item.employee.id }}" class="form-label">Дата начала периода</label>
+                                        <input type="date" class="form-control" id="emp_start_date{{ item.employee.id }}" 
+                                               name="start_date" value="{{ default_start_date }}">
+                                        <small class="form-text text-muted">Оставьте пустым для отчета за все время</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="emp_end_date{{ item.employee.id }}" class="form-label">Дата окончания периода</label>
+                                        <input type="date" class="form-control" id="emp_end_date{{ item.employee.id }}" 
+                                               name="end_date" value="{{ default_end_date }}">
+                                        <small class="form-text text-muted">Оставьте пустым для отчета за все время</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Формат отчета</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" 
+                                                   name="format{{ item.employee.id }}" 
+                                                   id="empFormatHTML{{ item.employee.id }}" value="html" checked>
+                                            <label class="form-check-label" for="empFormatHTML{{ item.employee.id }}">
+                                                Просмотр в браузере (HTML)
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" 
+                                                   name="format{{ item.employee.id }}" 
+                                                   id="empFormatPDF{{ item.employee.id }}" value="pdf">
+                                            <label class="form-check-label" for="empFormatPDF{{ item.employee.id }}">
+                                                Скачать PDF
+                                            </label>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                <button type="button" class="btn btn-success" 
+                                        onclick="generateEmployeeReport({{ item.employee.id }})">
+                                    Сформировать отчет
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -91,11 +146,120 @@
 
 <!-- Кнопки для формирования отчета по всем сотрудникам в отделе -->
 <hr>
-<a href="{% url 'generate_report' %}" class="btn btn-success" target="_blank">Сформировать отчёт по отделу</a>
-<a href="{% url 'generate_report' %}?format=pdf" class="btn btn-outline-success" target="_blank">Скачать отчёт в PDF</a>
+<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reportPeriodModal">
+    Сформировать отчёт по отделу
+</button>
+
+<!-- Модальное окно для выбора периода отчета -->
+<div class="modal fade" id="reportPeriodModal" tabindex="-1" aria-labelledby="reportPeriodModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportPeriodModalLabel">Выбор периода отчета</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reportPeriodForm">
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Дата начала периода</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" 
+                               value="{{ default_start_date }}">
+                        <small class="form-text text-muted">Оставьте пустым для отчета за все время</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">Дата окончания периода</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" 
+                               value="{{ default_end_date }}">
+                        <small class="form-text text-muted">Оставьте пустым для отчета за все время</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Формат отчета</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="format" id="formatHTML" value="html" checked>
+                            <label class="form-check-label" for="formatHTML">
+                                Просмотр в браузере (HTML)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="format" id="formatPDF" value="pdf">
+                            <label class="form-check-label" for="formatPDF">
+                                Скачать PDF
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-success" onclick="generateReport()">Сформировать отчет</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- JavaScript для открытия/закрытия -->
 <script>
+// Функция для генерации отчета с выбранными параметрами
+function generateReport() {
+    const form = document.getElementById('reportPeriodForm');
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    const format = document.querySelector('input[name="format"]:checked').value;
+    
+    // Формируем URL с параметрами
+    let url = '{% url "generate_report" %}?';
+    const params = [];
+    
+    if (startDate) {
+        params.push('start_date=' + startDate);
+    }
+    if (endDate) {
+        params.push('end_date=' + endDate);
+    }
+    if (format === 'pdf') {
+        params.push('format=pdf');
+    }
+    
+    url += params.join('&');
+    
+    // Открываем отчет в новой вкладке
+    window.open(url, '_blank');
+    
+    // Закрываем модальное окно
+    const modal = bootstrap.Modal.getInstance(document.getElementById('reportPeriodModal'));
+    modal.hide();
+}
+
+// Функция для генерации отчета по сотруднику
+function generateEmployeeReport(employeeId) {
+    const startDate = document.getElementById('emp_start_date' + employeeId).value;
+    const endDate = document.getElementById('emp_end_date' + employeeId).value;
+    const format = document.querySelector('input[name="format' + employeeId + '"]:checked').value;
+    
+    // Формируем URL с параметрами
+    let url = '/accounts/report/' + employeeId + '/?';
+    const params = [];
+    
+    if (startDate) {
+        params.push('start_date=' + startDate);
+    }
+    if (endDate) {
+        params.push('end_date=' + endDate);
+    }
+    if (format === 'pdf') {
+        params.push('format=pdf');
+    }
+    
+    url += params.join('&');
+    
+    // Открываем отчет в новой вкладке
+    window.open(url, '_blank');
+    
+    // Закрываем модальное окно
+    const modal = bootstrap.Modal.getInstance(document.getElementById('employeeReportModal' + employeeId));
+    modal.hide();
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function (trigger) {
         const iconWrapper = trigger.querySelector('.toggle-icon-wrapper');

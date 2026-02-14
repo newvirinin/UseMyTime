@@ -1,0 +1,52 @@
+@startuml
+
+participant "Сотрудник" as Employee
+participant "Веб-интерфейс" as Browser
+participant "JavaScript таймер" as JS
+participant "Django Backend" as Django
+database "База данных" as DB
+
+Employee -> Browser: Переход в раздел проектов
+Browser -> Django: GET /projects/
+
+Django -> DB: SELECT * FROM projects_project WHERE user_id=?
+DB --> Django: Список проектов пользователя
+
+Django --> Browser: HTML с проектами
+Browser --> Employee: Отображение списка проектов
+
+Employee -> Browser: Выбор проекта для работы
+Browser -> Browser: Подсветка выбранного проекта
+
+Employee -> Browser: Нажатие кнопки "Старт таймера"
+Browser -> JS: Запуск JavaScript таймера
+JS -> JS: Начало отсчета времени
+
+Browser --> Employee: Обновление времени каждую секунду
+Employee -> Employee: Отображение текущего времени в реальном времени
+
+Employee -> Browser: Нажатие "Добавить задачу"
+Browser -> Browser: Модальное окно формы задачи
+
+Employee -> Browser: Ввод текста задачи
+Browser -> Django: POST /projects/tasks/create/
+
+Django -> DB: INSERT INTO projects_task (text, project_id, user_id)
+DB --> Django: ID созданной задачи
+
+Django --> Browser: JSON с подтверждением и ID задачи
+Browser --> Employee: Задача добавлена к текущему таймеру
+
+Employee -> Browser: Нажатие кнопки "Стоп таймера"
+Browser -> JS: Остановка таймера
+JS -> JS: Финальное время и ID задачи
+
+Browser -> Django: POST /projects/time/save/
+
+Django -> DB: INSERT INTO projects_timeentry (project_id, task_id, duration)
+DB --> Django: Подтверждение сохранения
+
+Django --> Browser: JSON с результатом
+Browser --> Employee: Время успешно сохранено
+
+@enduml

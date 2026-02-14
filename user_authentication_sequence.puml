@@ -1,0 +1,63 @@
+@startuml
+
+participant "Пользователь" as User
+participant "Веб-интерфейс" as Browser
+participant "Django Middleware" as Middleware
+participant "Django Backend" as Django
+database "База данных" as DB
+
+User -> Browser: Переход на страницу входа
+Browser -> Django: GET /accounts/login/
+
+Django --> Browser: HTML форма входа
+Browser --> User: Отображение формы входа\n(username/email, password)
+
+User -> Browser: Ввод учетных данных:\n- username или email\n- password
+
+User -> Browser: Нажатие кнопки "Войти"
+Browser -> Django: POST /accounts/login/\n+ CSRF token
+
+Django -> Middleware: Проверка CSRF токена
+Middleware --> Django: Токен валиден
+
+Django -> Django: Попытка аутентификации\nModelBackend
+
+Django -> DB: SELECT * FROM auth_user\nWHERE username=?
+DB --> Django: Пользователь не найден
+
+Django -> Django: Попытка аутентификации\nEmailAuthBackend
+
+Django -> DB: SELECT * FROM auth_user\nWHERE email=?
+DB --> Django: Данные пользователя
+
+Django -> Django: user.check_password(password)
+
+alt Пароль верный
+    Django -> Django: Создание сессии
+    Django -> DB: INSERT INTO django_session\n(session_key, session_data, expire_date)
+    DB --> Django: Сессия создана
+    
+    Django -> DB: SELECT * FROM accounts_profile\nWHERE user_id=?
+    DB --> Django: Данные профиля пользователя
+    
+    Django --> Browser: HTTP 302 Redirect\nSet-Cookie: sessionid\nLocation: /accounts/profile/
+    Browser -> Django: GET /accounts/profile/
+    
+    Django -> Middleware: Проверка аутентификации\n@login_required
+    Middleware -> Django: Загрузка user из сессии
+    
+    Django -> DB: SELECT * FROM auth_user WHERE id=?
+    DB --> Django: Данные пользователя
+    
+    Django -> DB: SELECT * FROM accounts_profile WHERE user_id=?
+    DB --> Django: Профиль с ролью
+    
+    Django --> Browser: HTML страница профиля
+    Browser --> User: Успешный вход\nОтображение личного кабинета
+    
+else Пароль неверный
+    Django --> Browser: HTML форма с ошибкой
+    Browser --> User: Сообщение об ошибке:\n"Неверный логин или пароль"
+end
+
+@enduml

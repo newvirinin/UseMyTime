@@ -1,0 +1,67 @@
+@startuml
+
+participant "Генеральный директор" as Director
+participant "Веб-интерфейс" as Browser
+participant "Django Backend" as Django
+database "База данных" as DB
+participant "WeasyPrint" as PDF
+
+Director -> Browser: Переход в раздел "Отчеты по компании"
+Browser -> Django: GET /accounts/company-reports/
+
+Django -> DB: SELECT * FROM accounts_department
+DB --> Django: Список отделов
+
+Django -> DB: SELECT * FROM accounts_profile
+DB --> Django: Список сотрудников
+
+Django --> Browser: HTML с формой фильтрации
+Browser --> Director: Отображение формы с выбором отдела и периода
+
+note over Browser
+Выбор отдела: "Все"
+Период: с 01.12.2025 по 31.12.2025
+Формат: PDF
+end note
+
+Director -> Browser: Выбор параметров отчета
+Director -> Browser: Нажатие "Сформировать отчет"
+
+Browser -> Django: GET /accounts/report/?department=&start_date=2025-12-01&end_date=2025-12-31
+
+Django -> DB: SELECT * FROM accounts_profile WHERE user_id IN (all users)
+DB --> Django: Все сотрудники компании
+
+loop Для каждого сотрудника
+    Django -> DB: SELECT * FROM projects_project\nWHERE user_id=? AND is_archived=False\nAND review_status='approved'
+    DB --> Django: Принятые проекты
+    
+    Django -> DB: SELECT * FROM projects_task\nWHERE project_id IN (...) AND is_done=True\nAND completed_at BETWEEN start_date AND end_date
+    DB --> Django: Выполненные задачи за период
+    
+    Django -> Django: Расчет времени по проектам:\n- total_time из project.total_time\n- Суммирование по сотруднику
+    
+    Django -> Django: Расчет статистики:\n- total_hours, total_minutes\n- total_tasks\n- work_days (total_seconds / 28800)
+end
+
+Django -> Django: Группировка по отделам:\ndefaultdict для агрегации
+
+loop Для каждого отдела
+    Django -> Django: Суммирование:\n- tasks по отделу\n- seconds по отделу\n- список сотрудников
+end
+
+Django -> Django: Генерация электронной подписи:\nSHA-256(session_id + date)
+
+Django -> Django: Формирование HTML отчета:\nrender_to_string('company_report.html')
+
+alt format=pdf
+    Django -> PDF: HTML().write_pdf()
+    PDF --> Django: PDF binary data
+    Django --> Browser: HTTP Response: Content-Type: application/pdf\nContent-Disposition: attachment
+    Browser --> Director: Скачивание файла "отчет_компании_20251217.pdf"
+else format=html
+    Django --> Browser: HTML страница с отчетом
+    Browser --> Director: Отображение отчета в браузере
+end
+
+@enduml

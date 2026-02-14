@@ -92,8 +92,20 @@ def my_team(request):
             'tasks': tasks
         })
 
+    # Дефолтный период: текущий месяц
+    now = timezone.now()
+    default_start = now.replace(day=1).date()
+    # следующий месяц 1-е минус день
+    if now.month == 12:
+        next_month = now.replace(year=now.year+1, month=1, day=1)
+    else:
+        next_month = now.replace(month=now.month+1, day=1)
+    default_end = (next_month - timezone.timedelta(days=1)).date()
+
     context = {
         'team_tasks': team_tasks,
+        'default_start_date': default_start.strftime('%Y-%m-%d'),
+        'default_end_date': default_end.strftime('%Y-%m-%d'),
     }
     return render(request, 'accounts/my_team.html', context)
 
@@ -235,9 +247,18 @@ def generate_report(request):
                 # Дата завершения — дата последней выполненной задачи
                 last_task = tasks.order_by('-completed_at').first()
 
+                # Добавляем время начала и завершения для каждой задачи
+                tasks_with_times = []
+                for task in tasks:
+                    tasks_with_times.append({
+                        'task': task,
+                        'started_at': task.started_at,
+                        'completed_at': task.completed_at,
+                    })
+
                 employee_data['project_data'].append({
                     'project': project,
-                    'tasks': tasks,
+                    'tasks': tasks_with_times,  # Теперь каждая задача содержит время
                     'hours': hours,
                     'minutes': minutes,
                     'seconds': seconds,
@@ -419,9 +440,18 @@ def employee_report(request, employee_id):
             hours, minutes, seconds = project.get_hours_minutes_seconds()  # [ч, м]
             total_time_seconds += int(project.total_time.total_seconds())
 
+            # Добавляем время начала и завершения для каждой задачи
+            tasks_with_times = []
+            for task in tasks:
+                tasks_with_times.append({
+                    'task': task,
+                    'started_at': task.started_at,
+                    'completed_at': task.completed_at,
+                })
+
             report_data.append({
                 'project': project,
-                'tasks': tasks,
+                'tasks': tasks_with_times,  # Теперь каждая задача содержит время
                 'hours': hours,
                 'minutes': minutes,
                 'seconds': seconds,
@@ -434,6 +464,12 @@ def employee_report(request, employee_id):
     total_hours = total_time_seconds // 3600
     total_minutes = (total_time_seconds % 3600) // 60
     work_days = round(total_time_seconds / (8 * 3600), 2)
+
+    # Рассчитываем эффективность (часов в день)
+    if work_days > 0:
+        efficiency_hours_per_day = round((total_hours + total_minutes / 60), 1)
+    else:
+        efficiency_hours_per_day = 0
 
     # Подготовка данных для штампа ПЭП
     if not request.session.session_key:
@@ -453,6 +489,7 @@ def employee_report(request, employee_id):
         'total_minutes': total_minutes,
         'total_seconds': total_time_seconds,
         'work_days': work_days,
+        'efficiency_hours_per_day': efficiency_hours_per_day,
         'now': now_dt,
         'author': request.user.profile,
         'session_id': session_id,
