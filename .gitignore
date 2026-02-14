@@ -3,3 +3,12 @@
 .venv/
 .vscode/
 **/media/
+.env
+*.pyc
+*.pyo
+*.log
+staticfiles/
+.DS_Store
+*.swp
+*.swo
+.idea/

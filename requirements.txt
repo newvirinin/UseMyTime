@@ -9,3 +9,4 @@ weasyprint==66.0
 gunicorn==21.2.0
 python-dotenv==1.0.1
 django-widget-tweaks==1.5.1
+whitenoise==6.6.0

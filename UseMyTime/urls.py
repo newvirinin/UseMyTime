@@ -11,7 +11,7 @@ admin.site.index_title = "Панель управления"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('account/', include('accounts.urls')),
+    path('accounts/', include('accounts.urls')),
     path('contacts/', include('contacts.urls')),
     path('projects/', include('projects.urls')),
     path('', TemplateView.as_view(template_name='index.html'), name='index')
