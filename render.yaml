@@ -3,7 +3,7 @@ services:
     name: usemytime
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python UseMyTime/manage.py collectstatic --no-input && python UseMyTime/manage.py migrate && cd UseMyTime && gunicorn --bind 0.0.0.0:$PORT wsgi:application
+    startCommand: cd UseMyTime && python manage.py collectstatic --no-input && python manage.py migrate && gunicorn --bind 0.0.0.0:$PORT wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
