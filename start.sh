@@ -1,6 +1,16 @@
-#!/bin/bash
-echo "Setting DJANGO_SETTINGS_MODULE to UseMyTime.settings"
-export DJANGO_SETTINGS_MODULE=UseMyTime.settings
-echo "DJANGO_SETTINGS_MODULE is now: $DJANGO_SETTINGS_MODULE"
-echo "Starting gunicorn..."
-exec gunicorn UseMyTime.wsgi:application --bind 0.0.0.0:$PORT
+#!/usr/bin/env bash
+# Exit on error
+set -o errexit
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Collect static files
+python UseMyTime/manage.py collectstatic --no-input
+
+# Apply database migrations
+python UseMyTime/manage.py migrate
+
+# Start gunicorn
+cd UseMyTime
+gunicorn --bind 0.0.0.0:$PORT wsgi:application

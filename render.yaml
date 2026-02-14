@@ -1,12 +1,19 @@
 services:
-  # Web Service
   - type: web
-    name: UseMyTime
+    name: usemytime
     env: python
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "./start.sh"
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
     envVars:
-      - key: DJANGO_SETTINGS_MODULE
-        value: UseMyTime.settings
-    autoDeploy: true
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: DB_ENGINE
+        value: postgresql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: usemytime-db
+          property: connectionString
