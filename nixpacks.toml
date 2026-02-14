@@ -5,4 +5,4 @@ nixPkgs = ["python39", "postgresql"]
 cmds = ["pip install -r requirements.txt"]
 
 [start]
-cmd = "cd UseMyTime && python manage.py collectstatic --no-input && python manage.py migrate && gunicorn --bind 0.0.0.0:$PORT wsgi:application"
+cmd = "python UseMyTime/manage.py collectstatic --no-input && python UseMyTime/manage.py migrate && gunicorn --chdir UseMyTime --bind 0.0.0.0:$PORT wsgi:application"
